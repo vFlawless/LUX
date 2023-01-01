@@ -110,7 +110,6 @@ namespace LUX
                     new Fish("Octoking", Rarity.Red, 4600, Planet.Ocean),
                     new Fish("Rainbow Darter", Rarity.Red, 35, Planet.Ocean),
                     new Fish("Mecha Snapper", Rarity.Red, 150, Planet.Purple)
-
             };
 
             // Intitialize multipliers

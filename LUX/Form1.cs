@@ -44,7 +44,7 @@ namespace LUX
             Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", tempPath);
 
             // GoogleCredential.FromFile(path);
-            db = FirestoreDb.Create("<project id>");
+            db = FirestoreDb.Create("luxfishing-1b3b6"); / /IMPORTANT
         }
 
 
@@ -410,15 +410,15 @@ namespace LUX
                 {
                     if (name == Fishes[k].name)
                     {
-                        Fishes[k].Multipliers.Add(float.Parse(number) / Fishes[k].minWeigth);
-
-                        if(float.Parse(number) / Fishes[k].minWeigth <= 1000) // There was a problem when people are coming from europe / america because of the decimal '.' / ',' 
+                        if(float.Parse(number) / Fishes[k].minWeigth < 1000) // There was a problem when people are coming from europe / america because of the decimal '.' / ',' 
                         {
                             Multipliers.Add(float.Parse(number) / Fishes[k].minWeigth);
+                            Fishes[k].Multipliers.Add(float.Parse(number) / Fishes[k].minWeigth);
                         }
                         else
                         {
                             Multipliers.Add((float.Parse(number) / Fishes[k].minWeigth) / 1000);
+                            Fishes[k].Multipliers.Add((float.Parse(number) / Fishes[k].minWeigth) / 1000);
                         }
 
                         if (planettemp == Planet.Null)
@@ -429,7 +429,6 @@ namespace LUX
                         {
                             planettemp = Planet.Ocean;
                         }
-                        break;
                     }
                     else if (k == Fishes.Count - 1)
                     {

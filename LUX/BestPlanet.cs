@@ -35,13 +35,13 @@ namespace LUX
 
             
             Payload2 pl = snapshot.ConvertTo<Payload2>();
-
+            
             float best;
 
             int[] amountPlanets = new int[7];
             List<BestPlanet> bestPlanets = new(); //0 = Yellow, 1 = Orange, 2 = Grey, 3 = Blue, 4 = Red, 5 = Purple, 6 = Ocean
             string[] planetTypes = new string[] { "Yellow", "Orange", "Grey", "Blue", "Red", "Purple", "Ocean" };
-
+            
             //Initialize List
             for (int i = 0; i < planetTypes.Length; i++)
             {
@@ -55,7 +55,7 @@ namespace LUX
                     best = 0;
                     Query capitalQuery = db.Collection(pl.Domains[i]).WhereEqualTo("Planet", planetTypes[j]); // Get Every Planet that is the right PlanetType
                     QuerySnapshot snapshots = await capitalQuery.GetSnapshotAsync();
-                    amountPlanets[j] = snapshots.Count;
+                    amountPlanets[j] += snapshots.Count;
 
                     for (int k = 0; k < snapshots.Count; k++)    // Every Planet with that type 
                     {
@@ -70,7 +70,7 @@ namespace LUX
                         amountRed += Planet.RedMultipliers.Count;
                         avrgMultiplier = avrgMultiplier.Concat(Planet.GreenMultipliers).Concat(Planet.BlueMultipliers).Concat(Planet.PurpleMultipliers).Concat(Planet.OrangeMultipliers).Concat(Planet.RedMultipliers).ToList();
 
-                        if (Planet.HighestMultiplier > best) // If Hghest multiplier is > than highest Multi before
+                        if (Planet.HighestMultiplier > best) // If Highest multiplier is > than highest Multi before
                         {
                             bestPlanets[j] = new BestPlanet(
                                 PlanetName: $"{pl.Domains[i]}{(Planet.URLSubstring.Length == 0 ? "" : $"/{Planet.URLSubstring}")}",
