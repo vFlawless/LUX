@@ -1,4 +1,5 @@
 ﻿using Google.Cloud.Firestore;
+using System;
 using System.Security.Policy;
 
 namespace LUX
@@ -6,11 +7,11 @@ namespace LUX
     public partial class Form1 : Form
     {
         protected FirestoreDb db;
-        List<float> GreenMulti = new();
-        List<float> BlueMulti = new();
-        List<float> PurpleMulti = new();
-        List<float> OrangeMulti = new();
-        List<float> RedMulti = new();
+        int GreenMulti;
+        int BlueMulti;
+        int PurpleMulti;
+        int OrangeMulti;
+        int RedMulti;
         string previousMessage = "";
         //                                        Adding all the Fishes                                               \\
         List<Fish> Fishes = new();
@@ -22,40 +23,42 @@ namespace LUX
 
         //DB: 
         //"URL Domain"        Domain of www.youtube.com == youtube.com
-            //Random ID
-                //Multipliers 
-                //HighestValue
-                //.
-                //.
-            //~Random ID
-            //~Random ID
+        //Random ID
+        //Multipliers 
+        //HighestValue
+        //.
+        //.
+        //~Random ID
+        //~Random ID
 
         //After first / we split --> make sub directory
 
         private void Form1_Load(object sender, EventArgs e)
         {
             byte[] resourceBytes = Properties.Resources.cloudfire;
-            
+
             // Write the resource to a temporary file
             string tempPath = Path.GetTempFileName();
             File.WriteAllBytes(tempPath, resourceBytes);
-            
+
             // Set the GOOGLE_APPLICATION_CREDENTIALS environment variable
             Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", tempPath);
 
             // GoogleCredential.FromFile(path);
-            db = FirestoreDb.Create("luxfishing-1b3b6"); / /IMPORTANT
+            db = FirestoreDb.Create("<project-id>");
         }
+
 
 
         private async void button1_Click(object sender, EventArgs e)
         {
+
             // Resetting the Multipliers so they don't get stacked
-            GreenMulti = new List<float>(); 
-            BlueMulti = new List<float>();
-            PurpleMulti = new List<float>();
-            OrangeMulti = new List<float>();
-            RedMulti = new List<float>();
+            GreenMulti = 0; 
+            BlueMulti = 0;
+            PurpleMulti = 0;
+            OrangeMulti = 0;
+            RedMulti = 0;
             
             //                                        Adding all the Fishes                                               \\
             Fishes = new Fish().GetFishList(GreenMulti, BlueMulti, PurpleMulti, OrangeMulti, RedMulti);
@@ -74,6 +77,7 @@ namespace LUX
                 label1.ForeColor = System.Drawing.Color.Red;
                 return;
             }
+            previousMessage = Message;
 
             label1.Text = "Enter your fishing history";
             label1.ForeColor = System.Drawing.Color.Black;
@@ -106,7 +110,7 @@ namespace LUX
             // highest multiplier
             float highestMultiplier = (float)(Multipliers.Count > 0 ? Multipliers.Max() : 0.0);
 
-            StatsTextBox.Text = await OutputStringAsync(planet, averageMulitplier, highestMultiplier, GreenMulti, BlueMulti, PurpleMulti, OrangeMulti, RedMulti, amount, rest, Domain);;
+            StatsTextBox.Text = await OutputStringAsync(planet, averageMulitplier, highestMultiplier, GreenMulti, BlueMulti, PurpleMulti, OrangeMulti, RedMulti, amount, rest, Domain, Multipliers);;
         }
 
 
@@ -114,7 +118,7 @@ namespace LUX
         {
             // This Button is for showing the best Planets
             var result = await new BestPlanet().GetBestPlanetsAsync(db); 
-            AppendTextbox(result.Item1, result.Item2, result.Item3, result.Item4, result.Item5, result.Item6, result.Item7, result.Item8);
+            AppendTextbox(result.Item1, result.Item2, result.Item3, result.Item4, result.Item5, result.Item6, result.Item7, result.Item8, result.Item9);
         }
 
 
@@ -142,29 +146,18 @@ namespace LUX
         {
             string rest = "";
 
-            string Pre = "https://www.";
-            string Pre2 = "www.";
-            string Pre3 = "https://www";
-            string Pre4 = "https://";
+            string[] Pre = { "https://www.", "www.", "https://www", "https://", "https:/", "https:", "http://www.", "http://www", "http://", "http:/", "http:" };
 
             // Check if URL starts with any of the patterns (Format Domain of URL)
-            if (Url.StartsWith(Pre))
+            
+            for(int i = 0; i < Pre.Length; i++)
             {
-                Url = Url.Replace(Pre, "");
+                if (Url.StartsWith(Pre[i]))
+                {
+                    Url = Url.Replace(Pre[i], "");
+                }
             }
-            else if (Url.StartsWith(Pre2))
-            {
-                Url = Url.Replace(Pre2, "");
-            }
-            else if (Url.StartsWith(Pre3))
-            {
-                Url = Url.Replace(Pre3, "");
-            }
-            else if (Url.StartsWith(Pre4))
-            {
-                Url = Url.Replace(Pre4, "");
-            }
-
+            
             //only start of Link == collection, document (with random ID) contains rest of link:
             for (int i = 0; i < Url.Length; i++)
             {
@@ -182,73 +175,62 @@ namespace LUX
 
 
         private async Task<string> OutputStringAsync(string planet, float averageMulitplier, float highestMultiplier,
-                                    List<float> GreenMulti, List<float> BlueMulti, List<float> PurpleMulti, List<float> OrangeMulti, List<float> RedMulti,
-                                    int amount, string rest, string Domain
+                                    int GreenMulti, int BlueMulti, int PurpleMulti, int OrangeMulti, int RedMulti,
+                                    int amount, string rest, string Domain, List<float> Multipliers
                                     )
         {
-            List<float> Multipliers;
             string x = "";
 
             Payload pl = new Payload
             {
-                GreenMultipliers = GreenMulti,
-                PurpleMultipliers = PurpleMulti,
-                OrangeMultipliers = OrangeMulti,
-                RedMultipliers = RedMulti,
-                BlueMultipliers = BlueMulti,
-                HighestMultiplier = highestMultiplier,
+                amount = amount,
+                amountGreen = GreenMulti,
+                amountBlue = BlueMulti,
+                amountPurple = PurpleMulti,
+                amountOrange = OrangeMulti,
+                amountRed = RedMulti,
+                avrgMultiplier = averageMulitplier,
+                highestMultiplier = highestMultiplier,
                 URLSubstring = rest,
-                Planet = planet
+                planet = planet
             };
 
 
             x += $"Session stats ({planet}): \n";
-            x = AppendX(x, averageMulitplier, highestMultiplier, pl, amount);
-            x += $"{$"For {amount} {(amount >= 0 ? "fishes" : "fish")}",-30} {GreenMulti.Count * 100 + BlueMulti.Count * 200 + PurpleMulti.Count * 1000 + OrangeMulti.Count * 20000 + RedMulti.Count * 1000000:n0} Credits\n";
+            x = AppendX(x, pl.avrgMultiplier, pl.highestMultiplier, pl, pl.amount);
+            x += $"{$"For {pl.amount:n0} {(pl.amount >= 0 ? "fishes" : "fish")}",-30} {pl.amountGreen * 100 + pl.amountBlue * 200 + pl.amountPurple * 1000 + pl.amountOrange * 20000 + pl.amountRed * 1000000:n0} Credits\n";
 
 
-            pl = await DataAsync(pl, Domain, amount);
-
-            Multipliers = pl.GreenMultipliers.Concat(pl.BlueMultipliers).Concat(pl.PurpleMultipliers).Concat(pl.OrangeMultipliers).Concat(pl.RedMultipliers).ToList();
-            amount = Multipliers.Count;
+            pl = await DataAsync(pl, Domain, amount, Multipliers);
+            
 
             // get avrg Multiplier 
-            averageMulitplier = (float)(Multipliers.Count > 0 ? Multipliers.Average() : 0.0);
+            averageMulitplier = (float)(pl.amount > 0 ? pl.avrgMultiplier : 0.0);
             // get highest multiplier
-            highestMultiplier = (float)(Multipliers.Count > 0 ? Multipliers.Max() : 0.0);
+            highestMultiplier = (float)(pl.amount > 0 ? pl.highestMultiplier : 0.0);
 
             x += "--------------------------------------------------------------------\n";
             x += $"Alltime Stats for {Domain}{(rest.Length > 0 ? $"/{rest}" : rest)}: \n\n";
-            x = AppendX(x, averageMulitplier, highestMultiplier, pl, amount);
-            x += $"For {amount} {(amount >= 0 ? "Fishes" : "Fish")}\n";
+            x = AppendX(x, pl.avrgMultiplier, pl.highestMultiplier, pl, pl.amount);
+            x += $"For {pl.amount:n0} {(pl.amount >= 0 ? "Fishes" : "Fish")}\n";
 
             return x;
         }
 
         private static string AppendX(string x, double averageMulitplier, double highestMultiplier, Payload pl, int amount)
         {
-            x += $"Your average multiplier is: {averageMulitplier:0.00000000}\n";
-            x += $"Your highest multiplier is: {highestMultiplier:0.00}\n";
+            x += $"Your average multiplier is: {averageMulitplier:0.00000}\n";
+            x += $"Your highest multiplier is: {highestMultiplier:0.000}\n";
 
             x += "\n";
 
-            x += "That's an average multiplier of:\n";
-
-            x += $"{(pl.GreenMultipliers.Count > 0 ? pl.GreenMultipliers.Average().ToString("0.0000") + " Greens." : "You have caught too few green fish.")}\n";
-            x += $"{(pl.BlueMultipliers.Count > 0 ? pl.BlueMultipliers.Average().ToString("0.0000") + " Blues." : "You have caught too few blue fish")}\n";
-            x += $"{(pl.PurpleMultipliers.Count > 0 ? pl.PurpleMultipliers.Average().ToString("0.0000") + " Purples." : "You have caught too few purple fish")}\n";
-            x += $"{(pl.OrangeMultipliers.Count > 0 ? pl.OrangeMultipliers.Average().ToString("0.0000") + " Oranges." : "You have caught too few orange fish")}\n";
-            x += $"{(pl.RedMultipliers.Count > 0 ? pl.RedMultipliers.Average().ToString("0.0000") + " Reds." : "You have caught too few red fish")}\n";
-
-            x += $"\n";
-
             x += $"You've gotten an average of:\n";
 
-            x += $"{(float)pl.GreenMultipliers.Count / amount * 100:00.00}% Greens\n";
-            x += $"{(float)pl.BlueMultipliers.Count / amount * 100:00.00}% Blues\n";
-            x += $"{(float)pl.PurpleMultipliers.Count / amount * 100:00.00}% Purples\n";
-            x += $"{(float)pl.OrangeMultipliers.Count / amount * 100:00.00}% Oranges\n";
-            x += $"{(float)pl.RedMultipliers.Count / amount * 100:00.00}% Reds\n";
+            x += $"{(float)pl.amountGreen / amount * 100:00.00}% Greens\n";
+            x += $"{(float)pl.amountBlue / amount * 100:00.00}% Blues\n";
+            x += $"{(float)pl.amountPurple / amount * 100:00.00}% Purples\n";
+            x += $"{(float)pl.amountOrange / amount * 100:00.00}% Oranges\n";
+            x += $"{(float)pl.amountRed / amount * 100:00.00}% Reds\n";
 
             x += "\n";
 
@@ -258,7 +240,7 @@ namespace LUX
 
 
 
-        private void AppendTextbox(List<BestPlanet> bestPlanets, int[] amountPlanets, int amountGreen, int amountBlue, int amountPurple, int amountOrange, int amountRed, List<float> avrgMultiplier)
+        private void AppendTextbox(List<BestPlanet> bestPlanets, int[] amountPlanets, int amountGreen, int amountBlue, int amountPurple, int amountOrange, int amountRed, float avrgMultiplier, float highestMultiplier)
         {
             StatsTextBox.Text = "";
 
@@ -273,8 +255,8 @@ namespace LUX
                         $"Best {bestPlanets[i].PlanetType} planet:".PadRight(40) +
                         $"{bestPlanets[i].PlanetName}" +
                         $"\n" +
-                        $"{amountPlanets[i]} {bestPlanets[i].PlanetType} {(amountPlanets[i] == 1 ? "planet" : "planets")} in db".PadRight(40) +
-                        $"{bestPlanets[i].Amount} {(bestPlanets[i].Amount == 1 ? "fish" : "fishes")} caught" +
+                        $"{amountPlanets[i]:n0} {bestPlanets[i].PlanetType} {(amountPlanets[i] == 1 ? "planet" : "planets")} in db".PadRight(40) +
+                        $"{bestPlanets[i].Amount:n0} {(bestPlanets[i].Amount == 1 ? "fish" : "fishes")} caught" +
                         $"\naverage multiplier: {bestPlanets[i].AvrgMultiplier:0.0000}" +
                         $"\nhighest multiplier: {bestPlanets[i].HighestMultiplier:0.000} \n\n--------------------------------------------------------------------\n\n";
                 }
@@ -292,21 +274,21 @@ namespace LUX
                         $"--------------------------------------------------------------------\n\n\n" + 
                         $"Stats for all {amountPlanets.Sum()} planets" + $"\n" +
                         $"\n" +
-                        $"avarege multiplier: {avrgMultiplier.Average():0.0000}" +
+                        $"avarege multiplier: {avrgMultiplier:0.0000}" +
                         $"\n" +
-                        $"highest multiplier: {avrgMultiplier.Max():0.000}" +
+                        $"highest multiplier: {highestMultiplier:0.000}" +
                         $"\n" +
                         $"{(float)amountGreen / amount * 100:00.00}% Greens".PadRight(15) +
-                        $"({amountGreen} fishes)\n" +
+                        $"({amountGreen:n0} fishes)\n" +
                         $"{(float)amountBlue / amount * 100:00.00}% Blues".PadRight(15) +
-                        $"({amountBlue} fishes)\n" +
+                        $"({amountBlue:n0} fishes)\n" +
                         $"{(float)amountPurple / amount * 100:00.00}% Purples".PadRight(15) +
-                        $"({amountPurple} fishes)\n" +
+                        $"({amountPurple:n0} fishes)\n" +
                         $"{(float)amountOrange / amount * 100:00.00}% Oranges".PadRight(15) +
-                        $"({amountOrange} fishes)\n" +
+                        $"({amountOrange:n0} fishes)\n" +
                         $"{(float)amountRed / amount * 100:00.00}% Reds".PadRight(15) +
-                        $"({amountRed} fishes)\n" +
-                        $"{amount} Fishes caught."
+                        $"({amountRed:n0} fishes)\n" +
+                        $"{amount:n0} Fishes caught."
                         ;
             }
         }
@@ -316,10 +298,11 @@ namespace LUX
 
 
 
-        async Task<Payload> DataAsync(Payload payload, string url, int amount)
+        async Task<Payload> DataAsync(Payload payload, string url, int amount, List<float> Multipliers)
         {
             Query capitalQuery = db.Collection(url).WhereEqualTo("URLSubstring", payload.URLSubstring);
             QuerySnapshot capitalQuerySnapshot = await capitalQuery.GetSnapshotAsync();
+            
             if(capitalQuerySnapshot.Count == 0)
             {
                 // If it's a new URL
@@ -328,31 +311,31 @@ namespace LUX
             else
             {
                 // If URL already exists (previously fished on)
-                string ID = capitalQuerySnapshot[0].Id; //Get ID of Document (for changing later on)
+                string ID = capitalQuerySnapshot[0].Id; // Get ID of Document (for changing later on)
 
                 Payload pl = capitalQuerySnapshot[0].ConvertTo<Payload>();
-                payload.GreenMultipliers = payload.GreenMultipliers.Concat(pl.GreenMultipliers).ToList();
-                payload.BlueMultipliers = payload.BlueMultipliers.Concat(pl.BlueMultipliers).ToList();
-                payload.PurpleMultipliers = payload.PurpleMultipliers.Concat(pl.PurpleMultipliers).ToList();
-                payload.OrangeMultipliers = payload.OrangeMultipliers.Concat(pl.OrangeMultipliers).ToList();
-                payload.RedMultipliers = payload.RedMultipliers.Concat(pl.RedMultipliers).ToList();
-                payload.HighestMultiplier = payload.HighestMultiplier < pl.HighestMultiplier ? pl.HighestMultiplier : payload.HighestMultiplier;
-                
-                if(payload.Planet == "Null" || amount <= 4) //Gotta check this
+                payload.amount += pl.amount;
+                payload.amountGreen += pl.amountGreen;
+                payload.amountBlue += pl.amountBlue;
+                payload.amountPurple += pl.amountPurple;
+                payload.amountOrange += pl.amountOrange;
+                payload.amountRed += pl.amountRed;
+                payload.highestMultiplier = pl.highestMultiplier > payload.highestMultiplier ? pl.highestMultiplier : payload.highestMultiplier;
+
+                float average = payload.avrgMultiplier * amount;     //Calculate the average Multiplier
+                average += pl.avrgMultiplier * pl.amount;
+                average /= payload.amount;
+
+                payload.avrgMultiplier = average;
+
+                if (payload.planet == "Null" || amount <= 4) // Gotta check this
                 {
-                    payload.Planet = pl.Planet;
+                    payload.planet = pl.planet;
                 }
 
-                //Update Values for URL:
+                // Update Values for URL:
                 DocumentReference document = db.Collection(url).Document(ID);
-                await document.UpdateAsync("URLSubstring", payload.URLSubstring);
-                await document.UpdateAsync("GreenMultipliers", payload.GreenMultipliers);
-                await document.UpdateAsync("BlueMultipliers", payload.BlueMultipliers);
-                await document.UpdateAsync("PurpleMultipliers", payload.PurpleMultipliers);
-                await document.UpdateAsync("OrangeMultipliers", payload.OrangeMultipliers);
-                await document.UpdateAsync("RedMultipliers", payload.RedMultipliers);
-                await document.UpdateAsync("HighestMultiplier", payload.HighestMultiplier);
-                await document.UpdateAsync("Planet", payload.Planet);
+                await document.SetAsync(payload);
             }
 
             return payload;
@@ -360,7 +343,7 @@ namespace LUX
 
 
 
-        private static (string, List<Fish>, List<float>) GetPlanet(List<Fish> Fishes, string[] lines)
+        private (string, List<Fish>, List<float>) GetPlanet(List<Fish> Fishes, string[] lines)
         {
             int j;
             string name;
@@ -410,15 +393,32 @@ namespace LUX
                 {
                     if (name == Fishes[k].name)
                     {
-                        if(float.Parse(number) / Fishes[k].minWeigth < 1000) // There was a problem when people are coming from europe / america because of the decimal '.' / ',' 
+                        switch (Fishes[k].rarity)
+                        {
+                            case Rarity.Green:
+                                GreenMulti++;
+                                break;
+                            case Rarity.Blue:
+                                BlueMulti++;
+                                break;
+                            case Rarity.Purple:
+                                PurpleMulti++;
+                                break;
+                            case Rarity.Orange:
+                                OrangeMulti++;
+                                break;
+                            case Rarity.Red:
+                                RedMulti++;
+                                break;
+                        }
+
+                        if (float.Parse(number) / Fishes[k].minWeigth < 1000) // There was a problem when people are coming from europe / america because of the decimal '.' / ',' 
                         {
                             Multipliers.Add(float.Parse(number) / Fishes[k].minWeigth);
-                            Fishes[k].Multipliers.Add(float.Parse(number) / Fishes[k].minWeigth);
                         }
                         else
                         {
                             Multipliers.Add((float.Parse(number) / Fishes[k].minWeigth) / 1000);
-                            Fishes[k].Multipliers.Add((float.Parse(number) / Fishes[k].minWeigth) / 1000);
                         }
 
                         if (planettemp == Planet.Null)
@@ -429,6 +429,8 @@ namespace LUX
                         {
                             planettemp = Planet.Ocean;
                         }
+
+                        break;  // If Fish was found we can stop looping threw the rest 
                     }
                     else if (k == Fishes.Count - 1)
                     {

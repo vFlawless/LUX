@@ -19,10 +19,11 @@ namespace LUX
             this.Amount = Amount;
         }
 
-        public async Task<(List<BestPlanet>, int[], int, int, int, int, int, List<float>)> GetBestPlanetsAsync(FirestoreDb db)
+        public async Task<(List<BestPlanet>, int[], int, int, int, int, int, float, float)> GetBestPlanetsAsync(FirestoreDb db)
         {
             // Variables for best planets
-            List<float> avrgMultiplier = new();
+            float avrgMultiplier = 0;
+            float highestMulitplier = 0;
             int amountGreen = 0;
             int amountBlue = 0;
             int amountPurple = 0;
@@ -53,7 +54,7 @@ namespace LUX
                 for (int j = 0; j < planetTypes.Length; j++) // For every PlanetType in that collection
                 {
                     best = 0;
-                    Query capitalQuery = db.Collection(pl.Domains[i]).WhereEqualTo("Planet", planetTypes[j]); // Get Every Planet that is the right PlanetType
+                    Query capitalQuery = db.Collection(pl.Domains[i]).WhereEqualTo("planet", planetTypes[j]); // Get Every Planet that is the right PlanetType
                     QuerySnapshot snapshots = await capitalQuery.GetSnapshotAsync();
                     amountPlanets[j] += snapshots.Count;
 
@@ -61,30 +62,31 @@ namespace LUX
                     {
                         // Print all names
                         Payload Planet = snapshots[k].ConvertTo<Payload>();
-
+                        amountGreen += Planet.amountGreen;
+                        amountBlue += Planet.amountBlue;
+                        amountPurple += Planet.amountPurple;
+                        amountOrange += Planet.amountOrange;
+                        amountRed += Planet.amountRed;
+                        avrgMultiplier += Planet.avrgMultiplier * Planet.amount;
+                        highestMulitplier = Planet.highestMultiplier > highestMulitplier ? Planet.highestMultiplier : highestMulitplier;
+                        
                         // Safe data of all planets (for when checkbox is checked):
-                        amountGreen += Planet.GreenMultipliers.Count;
-                        amountBlue += Planet.BlueMultipliers.Count;
-                        amountPurple += Planet.PurpleMultipliers.Count;
-                        amountOrange += Planet.OrangeMultipliers.Count;
-                        amountRed += Planet.RedMultipliers.Count;
-                        avrgMultiplier = avrgMultiplier.Concat(Planet.GreenMultipliers).Concat(Planet.BlueMultipliers).Concat(Planet.PurpleMultipliers).Concat(Planet.OrangeMultipliers).Concat(Planet.RedMultipliers).ToList();
-
-                        if (Planet.HighestMultiplier > best) // If Highest multiplier is > than highest Multi before
+                        if (Planet.highestMultiplier > best) // If Highest multiplier is > than highest Multi before
                         {
                             bestPlanets[j] = new BestPlanet(
                                 PlanetName: $"{pl.Domains[i]}{(Planet.URLSubstring.Length == 0 ? "" : $"/{Planet.URLSubstring}")}",
                                 PlanetType: planetTypes[j],
-                                AvrgMultiplier: Planet.GreenMultipliers.Concat(Planet.BlueMultipliers).Concat(Planet.PurpleMultipliers).Concat(Planet.OrangeMultipliers).Concat(Planet.RedMultipliers).ToList().Average(),
-                                HighestMultiplier: Planet.HighestMultiplier,
-                                Amount: Planet.GreenMultipliers.Concat(Planet.BlueMultipliers).Concat(Planet.PurpleMultipliers).Concat(Planet.OrangeMultipliers).Concat(Planet.RedMultipliers).ToList().Count
+                                AvrgMultiplier: Planet.avrgMultiplier,
+                                HighestMultiplier: Planet.highestMultiplier,
+                                Amount: Planet.amount
                                 );
                             best = bestPlanets[j].HighestMultiplier;
                         }
                     }
                 }
             }
-            return (bestPlanets, amountPlanets, amountGreen, amountBlue, amountPurple, amountOrange, amountRed, avrgMultiplier);
+            avrgMultiplier /= amountGreen + amountBlue + amountPurple + amountOrange + amountRed;
+            return (bestPlanets, amountPlanets, amountGreen, amountBlue, amountPurple, amountOrange, amountRed, avrgMultiplier, highestMulitplier);
         }
     }
 }

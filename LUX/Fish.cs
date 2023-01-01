@@ -8,7 +8,6 @@ namespace LUX
 {
     public class Fish : Form1
     {
-        public List<float> Multipliers = new();
         public string name;
         public Rarity rarity;
         public int minWeigth;
@@ -22,7 +21,7 @@ namespace LUX
             this.planet = planet;
         }
 
-        public List<Fish> GetFishList(List<float> GreenMulti, List<float> BlueMulti, List<float> PurpleMulti, List<float> OrangeMulti,List<float> RedMulti)
+        public List<Fish> GetFishList(int GreenMulti, int BlueMulti, int PurpleMulti, int OrangeMulti, int RedMulti)
         {
             List<Fish> Fishes = new()
             {
@@ -112,28 +111,6 @@ namespace LUX
                     new Fish("Mecha Snapper", Rarity.Red, 150, Planet.Purple)
             };
 
-            // Intitialize multipliers
-            for (int i = 0; i < Fishes.Count; i++)
-            {
-                switch (Fishes[i].rarity)
-                {
-                    case Rarity.Green:
-                        Fishes[i].Multipliers = GreenMulti;
-                        break;
-                    case Rarity.Blue:
-                        Fishes[i].Multipliers = BlueMulti;
-                        break;
-                    case Rarity.Purple:
-                        Fishes[i].Multipliers = PurpleMulti;
-                        break;
-                    case Rarity.Orange:
-                        Fishes[i].Multipliers = OrangeMulti;
-                        break;
-                    case Rarity.Red:
-                        Fishes[i].Multipliers = RedMulti;
-                        break;
-                }
-            }
 
             return Fishes;
         }

@@ -6,29 +6,37 @@ namespace LUX
     public class Payload
     {
         [FirestoreProperty]
-        public List<float> GreenMultipliers { get; set; }
-        
+        public int amount { get; set; }
+
         [FirestoreProperty]
-        public List<float> BlueMultipliers { get; set; }
-        
+        public float avrgMultiplier { get; set; }
+
         [FirestoreProperty]
-        public List<float> PurpleMultipliers { get; set; }
-        
+        public int amountGreen { get; set; }
+
         [FirestoreProperty]
-        public List<float> OrangeMultipliers { get; set; }
-        
+        public int amountBlue { get; set; }
+
         [FirestoreProperty]
-        public List<float> RedMultipliers { get; set; }
-        
+        public int amountPurple { get; set; }
+
         [FirestoreProperty]
-        public float HighestMultiplier { get; set; }
+        public int amountOrange { get; set; }
+
+        [FirestoreProperty]
+        public int amountRed { get; set; }
+
+        [FirestoreProperty]
+        public float highestMultiplier { get; set; }
+
+        [FirestoreProperty]
+        public string planet { get; set; }
         
         [FirestoreProperty]
         public string URLSubstring { get; set; }
 
-        [FirestoreProperty]
-        public string Planet { get; set; }
     }
+    
 
     [FirestoreData]
     public class Payload2
@@ -37,4 +45,5 @@ namespace LUX
         public List<string> Domains { get; set; }
 
     }
+
 }
