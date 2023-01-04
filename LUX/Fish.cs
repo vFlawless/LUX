@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace LUX
 {
-    public class Fish : Form1
+    public class Fish
     {
         public string name;
         public Rarity rarity;
@@ -21,7 +21,7 @@ namespace LUX
             this.planet = planet;
         }
 
-        public List<Fish> GetFishList(int GreenMulti, int BlueMulti, int PurpleMulti, int OrangeMulti, int RedMulti)
+        public List<Fish> GetFishList()
         {
             List<Fish> Fishes = new()
             {

@@ -23,13 +23,13 @@ namespace LUX
 
         //DB: 
         //"URL Domain"        Domain of www.youtube.com == youtube.com
-        //Random ID
-        //Multipliers 
-        //HighestValue
-        //.
-        //.
-        //~Random ID
-        //~Random ID
+            //Random ID
+                //Multipliers 
+                //HighestValue
+                //.
+                //.
+            //~Random ID
+            //~Random ID
 
         //After first / we split --> make sub directory
 
@@ -45,7 +45,7 @@ namespace LUX
             Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", tempPath);
 
             // GoogleCredential.FromFile(path);
-            db = FirestoreDb.Create("<project-id>");
+            db = FirestoreDb.Create("");
         }
 
 
@@ -61,7 +61,7 @@ namespace LUX
             RedMulti = 0;
             
             //                                        Adding all the Fishes                                               \\
-            Fishes = new Fish().GetFishList(GreenMulti, BlueMulti, PurpleMulti, OrangeMulti, RedMulti);
+            Fishes = new Fish().GetFishList();
 
             string temp = URLTextbox.Text.ToLower();
             string Message = FishingHistoryTextbox.Text;
@@ -110,7 +110,7 @@ namespace LUX
             // highest multiplier
             float highestMultiplier = (float)(Multipliers.Count > 0 ? Multipliers.Max() : 0.0);
 
-            StatsTextBox.Text = await OutputStringAsync(planet, averageMulitplier, highestMultiplier, GreenMulti, BlueMulti, PurpleMulti, OrangeMulti, RedMulti, amount, rest, Domain, Multipliers);;
+            StatsTextBox.Text = await OutputStringAsync(planet, averageMulitplier, highestMultiplier, GreenMulti, BlueMulti, PurpleMulti, OrangeMulti, RedMulti, amount, rest, Domain);;
         }
 
 
@@ -176,7 +176,7 @@ namespace LUX
 
         private async Task<string> OutputStringAsync(string planet, float averageMulitplier, float highestMultiplier,
                                     int GreenMulti, int BlueMulti, int PurpleMulti, int OrangeMulti, int RedMulti,
-                                    int amount, string rest, string Domain, List<float> Multipliers
+                                    int amount, string rest, string Domain
                                     )
         {
             string x = "";
@@ -201,13 +201,8 @@ namespace LUX
             x += $"{$"For {pl.amount:n0} {(pl.amount >= 0 ? "fishes" : "fish")}",-30} {pl.amountGreen * 100 + pl.amountBlue * 200 + pl.amountPurple * 1000 + pl.amountOrange * 20000 + pl.amountRed * 1000000:n0} Credits\n";
 
 
-            pl = await DataAsync(pl, Domain, amount, Multipliers);
+            pl = await DataAsync(pl, Domain, amount);
             
-
-            // get avrg Multiplier 
-            averageMulitplier = (float)(pl.amount > 0 ? pl.avrgMultiplier : 0.0);
-            // get highest multiplier
-            highestMultiplier = (float)(pl.amount > 0 ? pl.highestMultiplier : 0.0);
 
             x += "--------------------------------------------------------------------\n";
             x += $"Alltime Stats for {Domain}{(rest.Length > 0 ? $"/{rest}" : rest)}: \n\n";
@@ -288,7 +283,7 @@ namespace LUX
                         $"({amountOrange:n0} fishes)\n" +
                         $"{(float)amountRed / amount * 100:00.00}% Reds".PadRight(15) +
                         $"({amountRed:n0} fishes)\n" +
-                        $"{amount:n0} Fishes caught."
+                        $"{amount:n0} Fishes caught.        {amountGreen * 100 + amountBlue * 200 + amountPurple * 1000 + amountOrange * 20000 + amountRed * 1000000:n0} Credits"
                         ;
             }
         }
@@ -298,7 +293,7 @@ namespace LUX
 
 
 
-        async Task<Payload> DataAsync(Payload payload, string url, int amount, List<float> Multipliers)
+        async Task<Payload> DataAsync(Payload payload, string url, int amount)
         {
             Query capitalQuery = db.Collection(url).WhereEqualTo("URLSubstring", payload.URLSubstring);
             QuerySnapshot capitalQuerySnapshot = await capitalQuery.GetSnapshotAsync();
