@@ -12,7 +12,7 @@ Download the folder named after your operating system from this <a href = "https
 ## How to use
 
 - Copy the whole chat (fishing history) into the left text box (with the label above).   
-- Copy the URL where you fished and paste it in the middle text box. 
+- Copy the whole URL (for example: https://twitter.com/home or just twitter.com/home) where you fished and paste it in the middle text box. 
 - After pressing the button, the data will be uploaded to a Firebase database.
 - After everything is done, you will see the output of your session statistics and the overall statistics for the URL.
 - There is also a button that shows the current best URLs of each planet type in the database. Aswell as a checkbox saying "Show Stats of all Planets combined" which when checked and pressing the second button will siplay the stats of all Planets combined.   
