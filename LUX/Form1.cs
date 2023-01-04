@@ -45,7 +45,7 @@ namespace LUX
             Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", tempPath);
 
             // GoogleCredential.FromFile(path);
-            db = FirestoreDb.Create("");
+            db = FirestoreDb.Create("luxfishing-1b3b6");
         }
 
 

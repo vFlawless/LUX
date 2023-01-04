@@ -34,15 +34,24 @@ namespace LUX
             DocumentReference doc = db.Collection("URLS").Document("Domain"); // Collection with the names of the other collections (bases for leaderboards)
             DocumentSnapshot snapshot = await doc.GetSnapshotAsync();
 
-            
+
             Payload2 pl = snapshot.ConvertTo<Payload2>();
-            
-            float best;
+
 
             int[] amountPlanets = new int[7];
             List<BestPlanet> bestPlanets = new(); //0 = Yellow, 1 = Orange, 2 = Grey, 3 = Blue, 4 = Red, 5 = Purple, 6 = Ocean
             string[] planetTypes = new string[] { "Yellow", "Orange", "Grey", "Blue", "Red", "Purple", "Ocean" };
-            
+            Dictionary<string, float> planetTyper = new Dictionary<string, float>
+            {
+                { "Yellow", 0},
+                { "Orange", 0},
+                { "Grey", 0},
+                { "Blue", 0},
+                { "Red", 0},
+                { "Purple", 0},
+                { "Ocean", 0},
+            };
+
             //Initialize List
             for (int i = 0; i < planetTypes.Length; i++)
             {
@@ -53,14 +62,13 @@ namespace LUX
             {
                 for (int j = 0; j < planetTypes.Length; j++) // For every PlanetType in that collection
                 {
-                    best = 0;
                     Query capitalQuery = db.Collection(pl.Domains[i]).WhereEqualTo("planet", planetTypes[j]); // Get Every Planet that is the right PlanetType
                     QuerySnapshot snapshots = await capitalQuery.GetSnapshotAsync();
                     amountPlanets[j] += snapshots.Count;
 
                     for (int k = 0; k < snapshots.Count; k++)    // Every Planet with that type 
                     {
-                        // Print all names
+                        // Safe data of all planets (for when checkbox is checked):
                         Payload Planet = snapshots[k].ConvertTo<Payload>();
                         amountGreen += Planet.amountGreen;
                         amountBlue += Planet.amountBlue;
@@ -69,10 +77,11 @@ namespace LUX
                         amountRed += Planet.amountRed;
                         avrgMultiplier += Planet.avrgMultiplier * Planet.amount;
                         highestMulitplier = Planet.highestMultiplier > highestMulitplier ? Planet.highestMultiplier : highestMulitplier;
-                        
-                        // Safe data of all planets (for when checkbox is checked):
-                        if (Planet.highestMultiplier > best) // If Highest multiplier is > than highest Multi before
+
+                        //MessageBox.Show(planetTypes[j] + ":   " + best.ToString() + "  " + Planet.highestMultiplier.ToString());
+                        if (Planet.highestMultiplier > planetTyper[planetTypes[j]]) // If Highest multiplier is > than highest Multi before
                         {
+                            //MessageBox.Show("reached");
                             bestPlanets[j] = new BestPlanet(
                                 PlanetName: $"{pl.Domains[i]}{(Planet.URLSubstring.Length == 0 ? "" : $"/{Planet.URLSubstring}")}",
                                 PlanetType: planetTypes[j],
@@ -80,7 +89,8 @@ namespace LUX
                                 HighestMultiplier: Planet.highestMultiplier,
                                 Amount: Planet.amount
                                 );
-                            best = bestPlanets[j].HighestMultiplier;
+                            planetTyper[planetTypes[j]] = Planet.highestMultiplier;
+                            //MessageBox.Show(best.ToString());
                         }
                     }
                 }
