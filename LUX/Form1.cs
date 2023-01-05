@@ -4,6 +4,8 @@ using System.Diagnostics;
 using System.Security.Policy;
 using System.Text.RegularExpressions;
 using System.Windows.Forms.Design;
+using System.Collections.Generic;
+using System.Collections;
 
 namespace LUX
 {
@@ -11,7 +13,7 @@ namespace LUX
     {
         protected FirestoreDb db;
         readonly string regex = @"^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w\.\-\?\&\=\+\%\$\@\#\~\;\,\:\!\*\'\(\)]*)*\/?$";
-        readonly string currentVersion = "1.4";
+        readonly string currentVersion = "1.5";
         int GreenMulti;
         int BlueMulti;
         int PurpleMulti;
@@ -280,30 +282,47 @@ namespace LUX
 
 
 
-        private void AppendTextbox(List<BestPlanet> bestPlanets, int[] amountPlanets, int amountGreen, int amountBlue, int amountPurple, int amountOrange, int amountRed, float avrgMultiplier, float highestMultiplier)
+        private void AppendTextbox(Dictionary<string, BestPlanet[]> bestPlanets, int[] amountPlanets, int amountGreen, int amountBlue, int amountPurple, int amountOrange, int amountRed, float avrgMultiplier, float highestMultiplier)
         {
             StatsTextBox.Text = "";
 
             for (int i = 0; i < bestPlanets.Count; i++)
             {
-                // We want a difference of 40, 40 = first Text + White Spaces
-
-
-                if (bestPlanets[i].PlanetName != "")
+                var item = bestPlanets.ElementAt(i);
+                var planettype = item.Key;
+                StatsTextBox.Text += $"Best of {amountPlanets[i]:n0} {planettype} {(amountPlanets[i] == 1 ? "planet" : "planets")}:\n\n";
+                var planets = item.Value;
+                for(int j = 0; j < planets.Length; j++)
                 {
-                    StatsTextBox.Text +=
-                        $"Best {bestPlanets[i].PlanetType} planet:".PadRight(40) +
-                        $"{bestPlanets[i].PlanetName}" +
-                        $"\n" +
-                        $"{amountPlanets[i]:n0} {bestPlanets[i].PlanetType} {(amountPlanets[i] == 1 ? "planet" : "planets")} in db".PadRight(40) +
-                        $"{bestPlanets[i].Amount:n0} {(bestPlanets[i].Amount == 1 ? "fish" : "fishes")} caught" +
-                        $"\naverage multiplier: {bestPlanets[i].AvrgMultiplier:0.00000}" +
-                        $"\nhighest multiplier: {bestPlanets[i].HighestMultiplier:0.00000} \n\n--------------------------------------------------------------------\n\n";
+                    if(j == 0)
+                    {
+                        StatsTextBox.Text += $"BEST:".PadRight(20);
+                    }
+                    else if(j == 1)
+                    {
+                        StatsTextBox.Text += $"SECOND BEST:".PadRight(20);
+                    }
+                    else
+                    {
+                        StatsTextBox.Text += $"THIRD BEST:".PadRight(20);
+                    }
+
+                    if (planets[j].HighestMultiplier == 0)
+                    {
+                        StatsTextBox.Text += $"Currently there is no more {planettype} planet.\n\n";
+                    }
+                    else
+                    {
+                        StatsTextBox.Text +=
+                        $"{planets[j].PlanetName}" +
+                        $"\n\n" +
+                        $"{planets[j].Amount:n0} {(planets[j].Amount == 1 ? "fish" : "fishes")} caught" +
+                        $"\naverage multiplier: {planets[j].AvrgMultiplier:0.00000}" +
+                        $"\nhighest multiplier: {planets[j].HighestMultiplier:0.00000} \n\n\n";
+                        ;
+                    }
                 }
-                else
-                {
-                    StatsTextBox.Text += $"Currently there is no {bestPlanets[i].PlanetType} planet in the database. \n\n--------------------------------------------------------------------\n\n";
-                }
+                StatsTextBox.Text += $"--------------------------------------------------------------------\n\n\n";
             }
 
             if (AllStatsCheckBox.Checked)
