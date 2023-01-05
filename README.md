@@ -8,6 +8,7 @@ This tool makes it easier to keep track of the fish you catch. Since instead of 
 ## Installation 
 
 Download the folder named after your operating system from this <a href = "https://drive.google.com/drive/folders/1jB0DPZG3YD96eNX0ljwyOTVxWFvShqCZ?usp=sharing">Drive</a>. The files are in packed in a .rar, so if you haven't already download <a href = "https://www.win-rar.com/">WinRAR</a> to unpack them.
+Once downloaded and unpacked doubleclick "Updater.exe" and everything will be done. 
 
 ## How to use
 
