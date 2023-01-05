@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.4.33205.214
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LUX", "LUX\LUX.csproj", "{BA990EA0-65B1-48BF-A7CF-AEEC6376171F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LUX", "LUX\LUX.csproj", "{BA990EA0-65B1-48BF-A7CF-AEEC6376171F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Updater", "Updater\Updater.csproj", "{8462CBF4-5E09-46B7-8367-0BA0CBE30A63}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{BA990EA0-65B1-48BF-A7CF-AEEC6376171F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BA990EA0-65B1-48BF-A7CF-AEEC6376171F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BA990EA0-65B1-48BF-A7CF-AEEC6376171F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8462CBF4-5E09-46B7-8367-0BA0CBE30A63}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8462CBF4-5E09-46B7-8367-0BA0CBE30A63}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8462CBF4-5E09-46B7-8367-0BA0CBE30A63}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8462CBF4-5E09-46B7-8367-0BA0CBE30A63}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

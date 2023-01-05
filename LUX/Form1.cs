@@ -1,24 +1,48 @@
 ﻿using Google.Cloud.Firestore;
-using System;
+using System.Net;
+using System.Diagnostics;
 using System.Security.Policy;
+using System.Text.RegularExpressions;
+using System.Windows.Forms.Design;
 
 namespace LUX
 {
     public partial class Form1 : Form
     {
         protected FirestoreDb db;
+        string regex = @"^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$";
+        string currentVersion = "1.2";
         int GreenMulti;
         int BlueMulti;
         int PurpleMulti;
         int OrangeMulti;
         int RedMulti;
         string previousMessage = "";
+        bool previously_checked = false;
         //                                        Adding all the Fishes                                               \\
         List<Fish> Fishes = new();
 
         public Form1()
         {
             InitializeComponent();
+
+            WebClient webClient = new WebClient();
+
+            try
+            {
+                if (!webClient.DownloadString("https://pastebin.com/raw/F5sf1aJ7").Contains(currentVersion)){
+                    if (MessageBox.Show("Looks like there is an update! Do you want to download it?", "Updater", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                        using (var client = new WebClient())
+                        {
+                            Process.Start("Updater.exe");
+                            this.Close();
+                        }
+                }
+            }
+            catch
+            {
+            
+            }
         }
 
         //DB: 
@@ -35,6 +59,8 @@ namespace LUX
 
         private void Form1_Load(object sender, EventArgs e)
         {
+            this.Text = "LUX Fishing Tool V" + currentVersion;
+
             byte[] resourceBytes = Properties.Resources.cloudfire;
 
             // Write the resource to a temporary file
@@ -45,14 +71,13 @@ namespace LUX
             Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", tempPath);
 
             // GoogleCredential.FromFile(path);
-            db = FirestoreDb.Create("luxfishing-1b3b6");
+            db = FirestoreDb.Create("");
         }
 
 
 
         private async void button1_Click(object sender, EventArgs e)
         {
-
             // Resetting the Multipliers so they don't get stacked
             GreenMulti = 0; 
             BlueMulti = 0;
@@ -64,6 +89,7 @@ namespace LUX
             Fishes = new Fish().GetFishList();
 
             string temp = URLTextbox.Text.ToLower();
+            
             string Message = FishingHistoryTextbox.Text;
 
             if(CheckTextboxesEmpty(temp, Message))
@@ -71,18 +97,20 @@ namespace LUX
                 return;
             }
 
-            if(previousMessage == Message)
+            label1.Text = "Enter your fishing history";
+            label1.ForeColor = System.Drawing.Color.Black;
+            label2.Text = "Enter the URL you were fishing on:";
+            label2.ForeColor = System.Drawing.Color.Black;
+            
+            if(previousMessage == Message && UploadDataCheckbox.Checked && previously_checked)
             {
                 label1.Text = "Do not enter the same Text twice:";
                 label1.ForeColor = System.Drawing.Color.Red;
                 return;
             }
             previousMessage = Message;
+            previously_checked = UploadDataCheckbox.Checked; 
 
-            label1.Text = "Enter your fishing history";
-            label1.ForeColor = System.Drawing.Color.Black;
-            label2.Text = "Enter The URL you were fishing on:";
-            label2.ForeColor = System.Drawing.Color.Black;
 
             // Get trimmed URL --> Collection and Document 
             var res = TrimmURL(temp);
@@ -117,6 +145,7 @@ namespace LUX
         private async void button2_Click(object sender, EventArgs e)
         {
             // This Button is for showing the best Planets
+            FishingHistoryTextbox.Text = "";
             var result = await new BestPlanet().GetBestPlanetsAsync(db); 
             AppendTextbox(result.Item1, result.Item2, result.Item3, result.Item4, result.Item5, result.Item6, result.Item7, result.Item8, result.Item9);
         }
@@ -125,12 +154,24 @@ namespace LUX
         private bool CheckTextboxesEmpty(string temp, string Message)
         {
             // Check if Text boxes are empty \\
-            if (temp.Length == 0)
+            if (UploadDataCheckbox.Checked)
             {
-                label2.Text = "Please enter the URL you were fishing on:";
-                label2.ForeColor = System.Drawing.Color.Red;
-                return true;
+                if (temp.Length == 0)
+                {
+                    label2.Text = "Please enter the URL you were fishing on:";
+                    label2.ForeColor = System.Drawing.Color.Red;
+                    return true;
+                }
+
+                if (!Regex.IsMatch(temp, regex)) // Check for valid URL 
+                {
+                    label2.Text = "Please enter a valid URL:";
+                    label2.ForeColor = System.Drawing.Color.Red;
+                    return true;
+                }
             }
+            
+            
 
             if (Message.Length == 0)
             {
@@ -138,6 +179,8 @@ namespace LUX
                 label1.ForeColor = System.Drawing.Color.Red;
                 return true;
             }
+
+
             return false;
         }
         
@@ -200,15 +243,16 @@ namespace LUX
             x = AppendX(x, pl.avrgMultiplier, pl.highestMultiplier, pl, pl.amount);
             x += $"{$"For {pl.amount:n0} {(pl.amount >= 0 ? "fishes" : "fish")}",-30} {pl.amountGreen * 100 + pl.amountBlue * 200 + pl.amountPurple * 1000 + pl.amountOrange * 20000 + pl.amountRed * 1000000:n0} Credits\n";
 
+            if (UploadDataCheckbox.Checked)
+            {
+                pl = await DataAsync(pl, Domain, amount);
 
-            pl = await DataAsync(pl, Domain, amount);
+                x += "--------------------------------------------------------------------\n";
+                x += $"Alltime Stats for {Domain}{(rest.Length > 0 ? $"/{rest}" : rest)}: \n\n";
+                x = AppendX(x, pl.avrgMultiplier, pl.highestMultiplier, pl, pl.amount);
+                x += $"For {pl.amount:n0} {(pl.amount >= 0 ? "Fishes" : "Fish")}\n";
+            }
             
-
-            x += "--------------------------------------------------------------------\n";
-            x += $"Alltime Stats for {Domain}{(rest.Length > 0 ? $"/{rest}" : rest)}: \n\n";
-            x = AppendX(x, pl.avrgMultiplier, pl.highestMultiplier, pl, pl.amount);
-            x += $"For {pl.amount:n0} {(pl.amount >= 0 ? "Fishes" : "Fish")}\n";
-
             return x;
         }
 
