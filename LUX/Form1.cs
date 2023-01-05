@@ -10,8 +10,8 @@ namespace LUX
     public partial class Form1 : Form
     {
         protected FirestoreDb db;
-        string regex = @"^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w\.\-\?\&\=\+\%\$\@\#\~\;\,\:\!\*\'\(\)]*)*\/?$";
-        string currentVersion = "1.4";
+        readonly string regex = @"^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w\.\-\?\&\=\+\%\$\@\#\~\;\,\:\!\*\'\(\)]*)*\/?$";
+        readonly string currentVersion = "1.4";
         int GreenMulti;
         int BlueMulti;
         int PurpleMulti;
@@ -502,7 +502,7 @@ namespace LUX
                     planet = "Grey";
                     break;
                 case Planet.Purple:
-                    planet = "Pruple";
+                    planet = "Purple";
                     break;
                 case Planet.Null:
                     planet = "Null";
