@@ -10,8 +10,8 @@ namespace LUX
     public partial class Form1 : Form
     {
         protected FirestoreDb db;
-        string regex = @"^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$";
-        string currentVersion = "1.2";
+        string regex = @"^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w\.\-\?\&\=\+\%\$\@\#\~\;\,\:\!\*\'\(\)]*)*\/?$";
+        string currentVersion = "1.4";
         int GreenMulti;
         int BlueMulti;
         int PurpleMulti;
@@ -71,13 +71,14 @@ namespace LUX
             Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", tempPath);
 
             // GoogleCredential.FromFile(path);
-            db = FirestoreDb.Create("");
+            db = FirestoreDb.Create("luxfishing-1b3b6");
         }
 
 
 
         private async void button1_Click(object sender, EventArgs e)
         {
+
             // Resetting the Multipliers so they don't get stacked
             GreenMulti = 0; 
             BlueMulti = 0;
@@ -259,7 +260,7 @@ namespace LUX
         private static string AppendX(string x, double averageMulitplier, double highestMultiplier, Payload pl, int amount)
         {
             x += $"Your average multiplier is: {averageMulitplier:0.00000}\n";
-            x += $"Your highest multiplier is: {highestMultiplier:0.000}\n";
+            x += $"Your highest multiplier is: {highestMultiplier:0.00000}\n";
 
             x += "\n";
 
@@ -296,8 +297,8 @@ namespace LUX
                         $"\n" +
                         $"{amountPlanets[i]:n0} {bestPlanets[i].PlanetType} {(amountPlanets[i] == 1 ? "planet" : "planets")} in db".PadRight(40) +
                         $"{bestPlanets[i].Amount:n0} {(bestPlanets[i].Amount == 1 ? "fish" : "fishes")} caught" +
-                        $"\naverage multiplier: {bestPlanets[i].AvrgMultiplier:0.0000}" +
-                        $"\nhighest multiplier: {bestPlanets[i].HighestMultiplier:0.000} \n\n--------------------------------------------------------------------\n\n";
+                        $"\naverage multiplier: {bestPlanets[i].AvrgMultiplier:0.00000}" +
+                        $"\nhighest multiplier: {bestPlanets[i].HighestMultiplier:0.00000} \n\n--------------------------------------------------------------------\n\n";
                 }
                 else
                 {
@@ -313,9 +314,9 @@ namespace LUX
                         $"--------------------------------------------------------------------\n\n\n" + 
                         $"Stats for all {amountPlanets.Sum()} planets" + $"\n" +
                         $"\n" +
-                        $"avarege multiplier: {avrgMultiplier:0.0000}" +
+                        $"avarege multiplier: {avrgMultiplier:0.00000}" +
                         $"\n" +
-                        $"highest multiplier: {highestMultiplier:0.000}" +
+                        $"highest multiplier: {highestMultiplier:0.00000}" +
                         $"\n" +
                         $"{(float)amountGreen / amount * 100:00.00}% Greens".PadRight(15) +
                         $"({amountGreen:n0} fishes)\n" +
