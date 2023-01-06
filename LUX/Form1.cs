@@ -6,6 +6,8 @@ using System.Text.RegularExpressions;
 using System.Windows.Forms.Design;
 using System.Collections.Generic;
 using System.Collections;
+using System.Windows.Forms;
+using Google.Apis.Util;
 
 namespace LUX
 {
@@ -13,7 +15,7 @@ namespace LUX
     {
         protected FirestoreDb db;
         readonly string regex = @"^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w\.\-\?\&\=\+\%\$\@\#\~\;\,\:\!\*\'\(\)]*)*\/?$";
-        readonly string currentVersion = "1.5";
+        readonly string currentVersion = "1.4";
         int GreenMulti;
         int BlueMulti;
         int PurpleMulti;
@@ -141,7 +143,7 @@ namespace LUX
             // highest multiplier
             float highestMultiplier = (float)(Multipliers.Count > 0 ? Multipliers.Max() : 0.0);
 
-            StatsTextBox.Text = await OutputStringAsync(planet, averageMulitplier, highestMultiplier, GreenMulti, BlueMulti, PurpleMulti, OrangeMulti, RedMulti, amount, rest, Domain);;
+            StatsTextBox.Text = await OutputStringAsync(planet, averageMulitplier, highestMultiplier, GreenMulti, BlueMulti, PurpleMulti, OrangeMulti, RedMulti, amount, rest, Domain);
         }
 
 
@@ -149,10 +151,307 @@ namespace LUX
         {
             // This Button is for showing the best Planets
             FishingHistoryTextbox.Text = "";
+            
             var result = await new BestPlanet().GetBestPlanetsAsync(db); 
             AppendTextbox(result.Item1, result.Item2, result.Item3, result.Item4, result.Item5, result.Item6, result.Item7, result.Item8, result.Item9);
+            // Color some words
+            ColorWords();
         }
 
+        private async void StatsTextBox_Click(object sender, EventArgs e)
+        {
+            Point clickPosition = StatsTextBox.PointToClient(Cursor.Position); // get the position of the mouse click in the RichTextBox's client area
+            int charIndex = StatsTextBox.GetCharIndexFromPosition(clickPosition); // get the index of the character under the mouse cursor
+            int startIndex = charIndex; // set the start index of the word to the index of the clicked character
+            while (startIndex > 0 && !char.IsWhiteSpace(StatsTextBox.Text[startIndex - 1]))
+            {
+                // if the character to the left of the clicked character is not a white space, move the start index to the left
+                startIndex--;
+            }
+            int length = charIndex - startIndex; // set the length of the word to the difference between the start index and the end index
+            while (charIndex < StatsTextBox.Text.Length && !char.IsWhiteSpace(StatsTextBox.Text[charIndex]))
+            {
+                // if the character to the right of the clicked character is not a white space, move the end index to the right
+                charIndex++;
+                length++;
+            }
+            if (length > 0) // if the length of the word is greater than 0, show a message box
+            {
+                string word = StatsTextBox.Text.Substring(startIndex, length); // get the word that was clicked
+                List<Payload> planets = new List<Payload>();
+                string x = "";
+                if (word == "Yellow")
+                {
+                    planets = await GetAllData("Yellow");
+                }
+                else if (word == "Orange")
+                {
+                    planets = await GetAllData("Orange");
+                }
+                else if (word == "Grey")
+                {
+                    planets = await GetAllData("Grey");
+                }
+                else if (word == "Blue")
+                {
+                    planets = await GetAllData("Blue");
+                }
+                else if (word == "Red")
+                {
+                    planets = await GetAllData("Red");
+                }
+                else if (word == "Purple")
+                {
+                    planets = await GetAllData("Purple");
+                }
+                else if (word == "Ocean")
+                {
+                    planets = await GetAllData("Ocean");
+                }
+
+                if(planets.Count > 0)
+                {
+                    for (int i = 0; i < planets.Count; i++)
+                    {
+                        x += (i + 1).ToString() + ".      " + planets[i].URLSubstring + "\n\n";
+                    }
+                    Form form = new Form();
+                    form.Size = new Size(form.Width * 3, form.Height * 2);
+                    RichTextBox richTextBox = new RichTextBox();
+                    richTextBox.Dock = DockStyle.Fill;
+                    richTextBox.ReadOnly = true;
+                    richTextBox.DetectUrls = true;
+                    richTextBox.Text = x;
+                    richTextBox.LinkClicked += RichTextBox_LinkClicked;
+                    form.Controls.Add(richTextBox);
+                    form.ShowDialog();
+                }
+            }
+        }
+
+
+        private void StatsTextBox_MouseMove(object sender, MouseEventArgs e)
+        {
+            Point clickPosition = StatsTextBox.PointToClient(Cursor.Position); // get the position of the mouse click in the RichTextBox's client area
+            int charIndex = StatsTextBox.GetCharIndexFromPosition(clickPosition); // get the index of the character under the mouse cursor
+            int startIndex = charIndex; // set the start index of the word to the index of the clicked character
+            while (startIndex > 0 && !char.IsWhiteSpace(StatsTextBox.Text[startIndex - 1]))
+            {
+                // if the character to the left of the clicked character is not a white space, move the start index to the left
+                startIndex--;
+            }
+            int length = charIndex - startIndex; // set the length of the word to the difference between the start index and the end index
+            while (charIndex < StatsTextBox.Text.Length && !char.IsWhiteSpace(StatsTextBox.Text[charIndex]))
+            {
+                // if the character to the right of the clicked character is not a white space, move the end index to the right
+                charIndex++;
+                length++;
+            }
+            if (length > 0) // if the length of the word is greater than 0, show a message box
+            {
+                string word = StatsTextBox.Text.Substring(startIndex, length); // get the word that was clicked
+                if (word == "Yellow" || word == "Orange" || word == "Grey" || word == "Blue" || word == "Red" || word == "Purple" || word == "Ocean")
+                {
+                    this.Cursor = Cursors.Hand;
+                }
+            }
+        }
+
+        private void RichTextBox_LinkClicked(object sender, LinkClickedEventArgs e)
+        {
+            Process.Start(new ProcessStartInfo { FileName = e.LinkText, UseShellExecute = true });
+        }
+
+        private void StatsTextBox_LinkClicked(object sender, LinkClickedEventArgs e)
+        {
+            Process.Start(new ProcessStartInfo { FileName = e.LinkText, UseShellExecute = true });
+        }
+
+
+        private void ColorWords()
+        {
+            Font currentFont = StatsTextBox.SelectionFont;
+            int index = StatsTextBox.Find("Yellow planets:");
+            int index2 = StatsTextBox.Find("Best of "); // Beginning of sentence
+            int length = index + "Yellow planets:".Length - index2;
+            if (index >= 0)
+            {
+                StatsTextBox.SelectionStart = index2;
+                StatsTextBox.SelectionLength = length;
+                StatsTextBox.SelectionColor = Color.FromArgb(255, 255, 128);
+                StatsTextBox.Select(index, "Yellow".Length);
+                StatsTextBox.SelectionFont = new Font(StatsTextBox.SelectionFont, FontStyle.Underline | FontStyle.Bold);
+            }
+
+            index2 = StatsTextBox.Find("Best of ", index, StatsTextBox.TextLength, RichTextBoxFinds.None);
+            index = StatsTextBox.Find("Orange planets:");
+            length = index + "Orange planets:".Length - index2;
+            if (index >= 0)
+            {
+                StatsTextBox.SelectionStart = index2;
+                StatsTextBox.SelectionLength = length;
+                StatsTextBox.SelectionColor = Color.Orange;
+                StatsTextBox.Select(index, "Orange".Length);
+                StatsTextBox.SelectionFont = new Font(StatsTextBox.SelectionFont, FontStyle.Underline | FontStyle.Bold);
+            }
+
+            index2 = StatsTextBox.Find("Best of ", index, StatsTextBox.TextLength, RichTextBoxFinds.None);
+            index = StatsTextBox.Find("Grey planets:");
+            length = index + "Grey planets:".Length - index2;
+            if (index >= 0)
+            {
+                StatsTextBox.SelectionStart = index2;
+                StatsTextBox.SelectionLength = length;
+                StatsTextBox.SelectionColor = Color.Gray;
+                StatsTextBox.Select(index, "Grey".Length);
+                StatsTextBox.SelectionFont = new Font(StatsTextBox.SelectionFont, FontStyle.Underline | FontStyle.Bold);
+            }
+
+            index2 = StatsTextBox.Find("Best of ", index, StatsTextBox.TextLength, RichTextBoxFinds.None);
+            index = StatsTextBox.Find("Blue planets:");
+            length = index + "Blue planets:".Length - index2;
+            if (index >= 0)
+            {
+                StatsTextBox.SelectionStart = index2;
+                StatsTextBox.SelectionLength = length;
+                StatsTextBox.SelectionColor = Color.Blue;
+                StatsTextBox.Select(index, "Blue".Length);
+                StatsTextBox.SelectionFont = new Font(StatsTextBox.SelectionFont, FontStyle.Underline | FontStyle.Bold);
+            }
+
+            index2 = StatsTextBox.Find("Best of ", index, StatsTextBox.TextLength, RichTextBoxFinds.None);
+            index = StatsTextBox.Find("Red planets:");
+            length = index + "Red planets:".Length - index2;
+            if (index >= 0)
+            {
+                StatsTextBox.SelectionStart = index2;
+                StatsTextBox.SelectionLength = length;
+                StatsTextBox.SelectionColor = Color.Red;
+                StatsTextBox.Select(index, "Red".Length);
+                StatsTextBox.SelectionFont = new Font(StatsTextBox.SelectionFont, FontStyle.Underline | FontStyle.Bold);
+            }
+
+            index2 = StatsTextBox.Find("Best of ", index, StatsTextBox.TextLength, RichTextBoxFinds.None);
+            index = StatsTextBox.Find("Purple planets:");
+            length = index + "Purple planets:".Length - index2;
+            if (index >= 0)
+            {
+                StatsTextBox.SelectionStart = index2;
+                StatsTextBox.SelectionLength = length;
+                StatsTextBox.SelectionColor = Color.Purple;
+                StatsTextBox.Select(index, "Pruple".Length);
+                StatsTextBox.SelectionFont = new Font(StatsTextBox.SelectionFont, FontStyle.Underline | FontStyle.Bold);
+            }
+
+            index2 = StatsTextBox.Find("Best of ", index, StatsTextBox.TextLength, RichTextBoxFinds.None);
+            index = StatsTextBox.Find("Ocean planets:");
+            length = index + "Ocean planets:".Length - index2;
+            if (index >= 0)
+            {
+                StatsTextBox.SelectionStart = index2;
+                StatsTextBox.SelectionLength = length;
+                StatsTextBox.SelectionColor = Color.LightBlue;
+                StatsTextBox.Select(index, "Ocean".Length);
+                StatsTextBox.SelectionFont = new Font(StatsTextBox.SelectionFont, FontStyle.Underline | FontStyle.Bold);
+            }
+            
+
+            if (AllStatsCheckBox.Checked)
+            {
+                index2 = StatsTextBox.Find("Greens ", index, StatsTextBox.TextLength, RichTextBoxFinds.None) - 7;
+                index = StatsTextBox.Find(")", index2, StatsTextBox.TextLength, RichTextBoxFinds.None);
+                length = index + 1 - index2;
+                if (index >= 0)
+                {
+                    StatsTextBox.SelectionStart = index2;
+                    StatsTextBox.SelectionLength = length;
+                    StatsTextBox.SelectionColor = Color.Green;
+                }
+
+
+                index2 = StatsTextBox.Find("Blues ", index2, StatsTextBox.TextLength, RichTextBoxFinds.None) - 7;
+                index = StatsTextBox.Find(")", index2, StatsTextBox.TextLength, RichTextBoxFinds.None);
+                length = index + 1 - index2;
+                if (index >= 0)
+                {
+                    StatsTextBox.SelectionStart = index2;
+                    StatsTextBox.SelectionLength = length;
+                    StatsTextBox.SelectionColor = Color.Blue;
+                }
+
+
+                index2 = StatsTextBox.Find("Purples ", index2, StatsTextBox.TextLength, RichTextBoxFinds.None) - 7;
+                index = StatsTextBox.Find(")", index2, StatsTextBox.TextLength, RichTextBoxFinds.None);
+                length = index + 1 - index2;
+                if (index >= 0)
+                {
+                    StatsTextBox.SelectionStart = index2;
+                    StatsTextBox.SelectionLength = length;
+                    StatsTextBox.SelectionColor = Color.Purple;
+                }
+
+
+                index2 = StatsTextBox.Find("Oranges ", index2, StatsTextBox.TextLength, RichTextBoxFinds.None) - 7;
+                index = StatsTextBox.Find(")", index2, StatsTextBox.TextLength, RichTextBoxFinds.None);
+                length = index + 1 - index2;
+                if (index >= 0)
+                {
+                    StatsTextBox.SelectionStart = index2;
+                    StatsTextBox.SelectionLength = length;
+                    StatsTextBox.SelectionColor = Color.Orange;
+                }
+
+
+                index2 = StatsTextBox.Find("Reds ", index2, StatsTextBox.TextLength, RichTextBoxFinds.None) - 7;
+                index = StatsTextBox.Find(")", index2, StatsTextBox.TextLength, RichTextBoxFinds.None);
+                length = index + 1 - index2;
+                if (index >= 0)
+                {
+                    StatsTextBox.SelectionStart = index2;
+                    StatsTextBox.SelectionLength = length;
+                    StatsTextBox.SelectionColor = Color.Red;
+                }
+            }
+
+            index = StatsTextBox.Find("BEST:");
+            while (index >= 0)
+            {
+                // Select the word and make it bold
+                StatsTextBox.SelectionStart = index;
+                StatsTextBox.SelectionLength = "BEST:".Length;
+                StatsTextBox.SelectionColor = Color.FromArgb(255, 215, 0);
+                StatsTextBox.SelectionFont = new Font(StatsTextBox.SelectionFont, StatsTextBox.SelectionFont.Style | FontStyle.Bold);
+
+                // Find the next occurrence of the word
+                index = StatsTextBox.Find("BEST:", index + "BEST:".Length, StatsTextBox.TextLength, RichTextBoxFinds.None);
+            }
+
+            index = StatsTextBox.Find("SECOND BEST:");
+            while (index >= 0)
+            {
+                // Select the word and make it bold
+                StatsTextBox.SelectionStart = index;
+                StatsTextBox.SelectionLength = "SECOND BEST:".Length;
+                StatsTextBox.SelectionColor = Color.FromArgb(192, 192, 192);
+                StatsTextBox.SelectionFont = new Font(StatsTextBox.SelectionFont, StatsTextBox.SelectionFont.Style | FontStyle.Bold);
+
+                // Find the next occurrence of the word
+                index = StatsTextBox.Find("SECOND BEST:", index + "SECOND BEST:".Length, StatsTextBox.TextLength, RichTextBoxFinds.None);
+            }
+
+            index = StatsTextBox.Find("THIRD BEST:");
+            while (index >= 0)
+            {
+                // Select the word and make it bold
+                StatsTextBox.SelectionStart = index;
+                StatsTextBox.SelectionLength = "THIRD BEST:".Length;
+                StatsTextBox.SelectionColor = Color.FromArgb(205, 127, 50);
+                StatsTextBox.SelectionFont = new Font(StatsTextBox.SelectionFont, StatsTextBox.SelectionFont.Style | FontStyle.Bold);
+
+                // Find the next occurrence of the word
+                index = StatsTextBox.Find("THIRD BEST:", index + "THIRD BEST:".Length, StatsTextBox.TextLength, RichTextBoxFinds.None);
+            }
+        }
 
         private bool CheckTextboxesEmpty(string temp, string Message)
         {
@@ -285,7 +584,6 @@ namespace LUX
         private void AppendTextbox(Dictionary<string, BestPlanet[]> bestPlanets, int[] amountPlanets, int amountGreen, int amountBlue, int amountPurple, int amountOrange, int amountRed, float avrgMultiplier, float highestMultiplier)
         {
             StatsTextBox.Text = "";
-
             for (int i = 0; i < bestPlanets.Count; i++)
             {
                 var item = bestPlanets.ElementAt(i);
@@ -556,6 +854,43 @@ namespace LUX
                 }
             }
             await collection.AddAsync(payload);
+        }
+
+
+        private async Task<List<Payload>> GetAllData(string planet)
+        {
+            List<Payload> pl = new List<Payload>();
+            DocumentReference doc = db.Collection("URLS").Document("Domain"); // Collection with the names of the other collections (bases for leaderboards)
+            DocumentSnapshot snapshot = await doc.GetSnapshotAsync();
+
+            Payload2 pl2 = snapshot.ConvertTo<Payload2>();
+
+            for (int i = 0; i < pl2.Domains.Count; i++)     // For every collection (domain of URL)
+            {
+                Query capitalQuery = db.Collection(pl2.Domains[i]).WhereEqualTo("planet", planet); // Get Every Planet that is the right PlanetType
+                QuerySnapshot snapshots = await capitalQuery.GetSnapshotAsync();
+
+                for (int k = 0; k < snapshots.Count; k++)    // Every Planet with that type 
+                {
+                    // Safe data of all planets (for when checkbox is checked):
+                    Payload Planet = snapshots[k].ConvertTo<Payload>();
+                    pl.Add(new Payload
+                    {
+                        amount = Planet.amount,
+                        amountBlue = Planet.amountBlue,
+                        amountGreen = Planet.amountGreen,
+                        amountRed = Planet.amountRed,
+                        amountOrange = Planet.amountOrange,
+                        amountPurple = Planet.amountPurple,
+                        avrgMultiplier = Planet.avrgMultiplier,
+                        highestMultiplier = Planet.highestMultiplier,
+                        planet = Planet.planet,
+                        URLSubstring = "https://www." + pl2.Domains[i] + "/" + Planet.URLSubstring
+                    });
+                }
+                pl.Sort((x, y) => y.avrgMultiplier.CompareTo(x.avrgMultiplier));
+            }
+            return pl;
         }
     }
 

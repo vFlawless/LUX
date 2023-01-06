@@ -76,6 +76,9 @@
             this.StatsTextBox.Size = new System.Drawing.Size(548, 647);
             this.StatsTextBox.TabIndex = 3;
             this.StatsTextBox.Text = "";
+            this.StatsTextBox.LinkClicked += new System.Windows.Forms.LinkClickedEventHandler(this.StatsTextBox_LinkClicked);
+            this.StatsTextBox.Click += new System.EventHandler(this.StatsTextBox_Click);
+            this.StatsTextBox.MouseMove += new System.Windows.Forms.MouseEventHandler(this.StatsTextBox_MouseMove);
             // 
             // URLTextbox
             // 

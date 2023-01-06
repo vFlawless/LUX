@@ -85,15 +85,15 @@ namespace LUX
 
                         for(int l = 0; l < planetHighest[planetTypes[j]].Length; l++)   // Loop threw array to see if there are some missing or if the current Planet is better then some in there
                         {
-                            if (planetHighest[planetTypes[j]][l] == 0 || Planet.highestMultiplier > planetHighest[planetTypes[j]][l])
+                            if (planetHighest[planetTypes[j]][l] == 0 || Planet.avrgMultiplier > planetHighest[planetTypes[j]][l])
                             {
                                 BestPlanet bestP = new BestPlanet(
-                                PlanetName: $"{pl.Domains[i]}{(Planet.URLSubstring.Length == 0 ? "" : $"/{Planet.URLSubstring}")}",
+                                PlanetName: $"https://www.{pl.Domains[i]}{(Planet.URLSubstring.Length == 0 ? "" : $"/{Planet.URLSubstring}")}",
                                 AvrgMultiplier: Planet.avrgMultiplier,
                                 HighestMultiplier: Planet.highestMultiplier,
                                 Amount: Planet.amount
                                 );
-                                var res = floatList(planetHighest[planetTypes[j]], l, Planet.highestMultiplier, bestPlanets[planetTypes[j]], bestP);
+                                var res = floatList(planetHighest[planetTypes[j]], l, Planet.avrgMultiplier, bestPlanets[planetTypes[j]], bestP);
                                 planetHighest[planetTypes[j]] = res.Item1;
                                 bestPlanets[planetTypes[j]] = res.Item2;
                                 break;
