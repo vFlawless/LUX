@@ -31,12 +31,12 @@ namespace LUX
 
         [FirestoreProperty]
         public string planet { get; set; }
-        
+
         [FirestoreProperty]
         public string URLSubstring { get; set; }
 
     }
-    
+
 
     [FirestoreData]
     public class Payload2

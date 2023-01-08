@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.FishingHistoryTextbox = new System.Windows.Forms.RichTextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.button1 = new System.Windows.Forms.Button();
@@ -41,16 +42,15 @@
             // 
             // FishingHistoryTextbox
             // 
-            this.FishingHistoryTextbox.Location = new System.Drawing.Point(12, 52);
+            this.FishingHistoryTextbox.Location = new System.Drawing.Point(12, 48);
             this.FishingHistoryTextbox.Name = "FishingHistoryTextbox";
-            this.FishingHistoryTextbox.Size = new System.Drawing.Size(374, 647);
+            this.FishingHistoryTextbox.Size = new System.Drawing.Size(361, 611);
             this.FishingHistoryTextbox.TabIndex = 0;
             this.FishingHistoryTextbox.Text = "";
             // 
             // label1
             // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(12, 34);
+            this.label1.Location = new System.Drawing.Point(12, 27);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(139, 15);
             this.label1.TabIndex = 1;
@@ -59,9 +59,9 @@
             // button1
             // 
             this.button1.Font = new System.Drawing.Font("Arial Black", 21.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.button1.Location = new System.Drawing.Point(500, 163);
+            this.button1.Location = new System.Drawing.Point(430, 108);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(218, 141);
+            this.button1.Size = new System.Drawing.Size(226, 139);
             this.button1.TabIndex = 2;
             this.button1.Text = "Generate output";
             this.button1.UseVisualStyleBackColor = true;
@@ -70,10 +70,10 @@
             // StatsTextBox
             // 
             this.StatsTextBox.Font = new System.Drawing.Font("Consolas", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.StatsTextBox.Location = new System.Drawing.Point(841, 52);
+            this.StatsTextBox.Location = new System.Drawing.Point(732, 48);
             this.StatsTextBox.Name = "StatsTextBox";
             this.StatsTextBox.ReadOnly = true;
-            this.StatsTextBox.Size = new System.Drawing.Size(548, 647);
+            this.StatsTextBox.Size = new System.Drawing.Size(531, 611);
             this.StatsTextBox.TabIndex = 3;
             this.StatsTextBox.Text = "";
             this.StatsTextBox.LinkClicked += new System.Windows.Forms.LinkClickedEventHandler(this.StatsTextBox_LinkClicked);
@@ -82,15 +82,14 @@
             // 
             // URLTextbox
             // 
-            this.URLTextbox.Location = new System.Drawing.Point(454, 66);
+            this.URLTextbox.Location = new System.Drawing.Point(391, 48);
             this.URLTextbox.Name = "URLTextbox";
             this.URLTextbox.Size = new System.Drawing.Size(322, 23);
             this.URLTextbox.TabIndex = 4;
             // 
             // label2
             // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(454, 48);
+            this.label2.Location = new System.Drawing.Point(391, 27);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(188, 15);
             this.label2.TabIndex = 5;
@@ -99,9 +98,9 @@
             // button2
             // 
             this.button2.Font = new System.Drawing.Font("Arial Black", 21.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.button2.Location = new System.Drawing.Point(500, 452);
+            this.button2.Location = new System.Drawing.Point(430, 377);
             this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(218, 141);
+            this.button2.Size = new System.Drawing.Size(226, 139);
             this.button2.TabIndex = 6;
             this.button2.Text = "Show best planets";
             this.button2.UseVisualStyleBackColor = true;
@@ -109,20 +108,18 @@
             // 
             // AllStatsCheckBox
             // 
-            this.AllStatsCheckBox.AutoSize = true;
             this.AllStatsCheckBox.Font = new System.Drawing.Font("Segoe UI", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.AllStatsCheckBox.Location = new System.Drawing.Point(454, 634);
+            this.AllStatsCheckBox.Location = new System.Drawing.Point(391, 543);
             this.AllStatsCheckBox.Name = "AllStatsCheckBox";
-            this.AllStatsCheckBox.Size = new System.Drawing.Size(322, 29);
+            this.AllStatsCheckBox.Size = new System.Drawing.Size(322, 50);
             this.AllStatsCheckBox.TabIndex = 7;
             this.AllStatsCheckBox.Text = "Show stats of all planets combined";
             this.AllStatsCheckBox.UseVisualStyleBackColor = true;
             // 
             // UploadDataCheckbox
             // 
-            this.UploadDataCheckbox.AutoSize = true;
             this.UploadDataCheckbox.Font = new System.Drawing.Font("Segoe UI", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.UploadDataCheckbox.Location = new System.Drawing.Point(467, 345);
+            this.UploadDataCheckbox.Location = new System.Drawing.Point(401, 278);
             this.UploadDataCheckbox.Name = "UploadDataCheckbox";
             this.UploadDataCheckbox.Size = new System.Drawing.Size(295, 29);
             this.UploadDataCheckbox.TabIndex = 8;
@@ -133,7 +130,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1401, 726);
+            this.ClientSize = new System.Drawing.Size(1275, 671);
             this.Controls.Add(this.UploadDataCheckbox);
             this.Controls.Add(this.AllStatsCheckBox);
             this.Controls.Add(this.button2);
@@ -143,9 +140,11 @@
             this.Controls.Add(this.button1);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.FishingHistoryTextbox);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "Form1";
-            this.Text = "LUX Fishing Tool V1.2";
+            this.Text = "LUX Fishing Tool";
             this.Load += new System.EventHandler(this.Form1_Load);
+            this.Resize += new System.EventHandler(this.Form1_Resize);
             this.ResumeLayout(false);
             this.PerformLayout();
 

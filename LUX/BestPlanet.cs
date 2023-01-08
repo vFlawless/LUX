@@ -1,6 +1,4 @@
 ﻿using Google.Cloud.Firestore;
-using System.Collections.Generic;
-using System.Xml;
 
 namespace LUX
 {
@@ -52,7 +50,7 @@ namespace LUX
             };
 
             //Initialize List
-            Dictionary<string, BestPlanet[]> bestPlanets = new() 
+            Dictionary<string, BestPlanet[]> bestPlanets = new()
             {
                 { "Yellow", initBestP() },
                 { "Orange", initBestP() },
@@ -83,12 +81,12 @@ namespace LUX
                         avrgMultiplier += Planet.avrgMultiplier * Planet.amount;
                         highestMulitplier = Planet.highestMultiplier > highestMulitplier ? Planet.highestMultiplier : highestMulitplier;
 
-                        for(int l = 0; l < planetHighest[planetTypes[j]].Length; l++)   // Loop threw array to see if there are some missing or if the current Planet is better then some in there
+                        for (int l = 0; l < planetHighest[planetTypes[j]].Length; l++)   // Loop threw array to see if there are some missing or if the current Planet is better then some in there
                         {
                             if (planetHighest[planetTypes[j]][l] == 0 || Planet.avrgMultiplier > planetHighest[planetTypes[j]][l])
                             {
                                 BestPlanet bestP = new BestPlanet(
-                                PlanetName: $"https://www.{pl.Domains[i]}{(Planet.URLSubstring.Length == 0 ? "" : $"/{Planet.URLSubstring}")}",
+                                PlanetName: $"https://{pl.Domains[i]}{(Planet.URLSubstring.Length == 0 ? "" : $"/{Planet.URLSubstring}")}",
                                 AvrgMultiplier: Planet.avrgMultiplier,
                                 HighestMultiplier: Planet.highestMultiplier,
                                 Amount: Planet.amount
@@ -108,7 +106,7 @@ namespace LUX
 
         private (float[], BestPlanet[]) floatList(float[] scores, int position, float score, BestPlanet[] bestPlanets, BestPlanet planet)
         {
-            if(position == 0)
+            if (position == 0)
             {
                 // Push Highscores one back 
                 float temp = scores[0];
@@ -124,7 +122,7 @@ namespace LUX
                 bestPlanets[1] = temp3;
                 bestPlanets[2] = temp4;
             }
-            else if(position == 1)
+            else if (position == 1)
             {
                 float temp = scores[1];
                 scores[1] = score;
@@ -134,7 +132,7 @@ namespace LUX
                 bestPlanets[1] = planet;
                 bestPlanets[2] = temp2;
             }
-            else if(position == 2)
+            else if (position == 2)
             {
                 scores[2] = score;
                 bestPlanets[2] = planet;

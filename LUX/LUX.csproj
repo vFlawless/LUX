@@ -10,10 +10,15 @@
     <DebugSymbols>false</DebugSymbols>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
+    <ApplicationIcon>lux-logo-square.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
     <None Remove="Resources\cloudfire.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="lux-logo-square.ico" />
   </ItemGroup>
 
   <ItemGroup>

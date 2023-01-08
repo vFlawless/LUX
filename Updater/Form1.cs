@@ -1,7 +1,6 @@
-using System.Net;
-using System.IO;
 using System.Diagnostics;
 using System.IO.Compression;
+using System.Net;
 
 namespace Updater
 {
@@ -22,7 +21,7 @@ namespace Updater
             // Set the ProgressBar location
             progressBar.Location = new Point(50, 50);
             // Add the ProgressBar to the form
-            this.Controls.Add(progressBar);
+            Controls.Add(progressBar);
 
             // Create the Label
             Label label = new Label();
@@ -32,7 +31,7 @@ namespace Updater
             // Set the Label location
             label.Location = new Point(50, 100);
             // Add the Label to the form
-            this.Controls.Add(label);
+            Controls.Add(label);
 
             try
             {
@@ -56,7 +55,7 @@ namespace Updater
                     // Start the LUX.exe file
                     Process.Start(@".\LUX.exe");
                     // Close the form
-                    this.Close();
+                    Close();
                 };
                 webClient.DownloadProgressChanged += (s, e) =>
                 {
@@ -66,14 +65,14 @@ namespace Updater
                 // Delete the old LUX.exe file
                 File.Delete(@".\LUX.exe");
                 // Download the new LUX.zip file
-                webClient.DownloadFileAsync(new Uri("http://lux-fishing.000webhostapp.com/update/LUX.zip"), @"LUX.zip");
+                webClient.DownloadFileAsync(new Uri("https://lux-fishing.000webhostapp.com/update/LUX.zip"), @"LUX.zip");
             }
             catch
             {
                 // Start the LUX.exe file
                 Process.Start("LUX.exe");
                 // Close the form
-                this.Close();
+                Close();
             }
 
         }

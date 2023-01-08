@@ -1,10 +1,4 @@
 ﻿using Google.Cloud.Firestore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Policy;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace LUX
 {
@@ -61,7 +55,7 @@ namespace LUX
                 string ID = capitalQuerySnapshot[0].Id; // Get ID of Document (for changing later on)
 
                 float average = URL.avrgMultiplier * URL.amount;     //Calculate the average Multiplier
-                
+
                 Payload pl = capitalQuerySnapshot[0].ConvertTo<Payload>();
                 if (URL.planet == "Null" || URL.amount <= 4) // Gotta check this
                 {
@@ -104,7 +98,7 @@ namespace LUX
             List<float> Multipliers = new();
             float highest = 0;
 
-            for(int i = 0; i < URL.GreenMultipliers.Count;i++)
+            for (int i = 0; i < URL.GreenMultipliers.Count; i++)
             {
                 if (URL.GreenMultipliers[i] >= 1000)
                 {
@@ -185,7 +179,7 @@ namespace LUX
             };
             await docRef.SetAsync(payload3);
         }
-        
+
 
         public static async void ResetData(FirestoreDb db)  // Resets all the data in DB
         {
