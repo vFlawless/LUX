@@ -27,7 +27,7 @@ namespace LUX
         public int amountRed { get; set; }
 
         [FirestoreProperty]
-        public float highestMultiplier { get; set; }
+        public List<float> highestMultiplier { get; set; }
 
         [FirestoreProperty]
         public string planet { get; set; }

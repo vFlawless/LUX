@@ -6,32 +6,78 @@ namespace LUX
     public class Previous_Payload
     {
         [FirestoreProperty]
-        public List<float> GreenMultipliers { get; set; }
+        public int amount { get; set; }
 
         [FirestoreProperty]
-        public List<float> BlueMultipliers { get; set; }
+        public float avrgMultiplier { get; set; }
 
         [FirestoreProperty]
-        public List<float> PurpleMultipliers { get; set; }
+        public int amountGreen { get; set; }
 
         [FirestoreProperty]
-        public List<float> OrangeMultipliers { get; set; }
+        public int amountBlue { get; set; }
 
         [FirestoreProperty]
-        public List<float> RedMultipliers { get; set; }
+        public int amountPurple { get; set; }
 
         [FirestoreProperty]
-        public float HighestMultiplier { get; set; }
+        public int amountOrange { get; set; }
+
+        [FirestoreProperty]
+        public int amountRed { get; set; }
+
+        [FirestoreProperty]
+        public float highestMultiplier { get; set; }
+
+        [FirestoreProperty]
+        public string planet { get; set; }
 
         [FirestoreProperty]
         public string URLSubstring { get; set; }
-
-        [FirestoreProperty]
-        public string Planet { get; set; }
     }
 
     public class DevTools
     {
+
+        public static async void ConvertData2(FirestoreDb db)
+        {
+            // Function that will convert old Data (with single float instead of top 3 for highest multiplier)
+            DocumentReference doc = db.Collection("URLS").Document("Domain"); // Collection with the names of the other collections (bases for leaderboards)
+            DocumentSnapshot snapshot = await doc.GetSnapshotAsync();
+            
+            Payload2 pl = snapshot.ConvertTo<Payload2>();
+            for (int i = 0; i < pl.Domains.Count; i++)     // For every collection (domain of URL)
+            {
+                Query allURL = db.Collection(pl.Domains[i]);
+                QuerySnapshot allURLs = await allURL.GetSnapshotAsync();
+
+                for (int j = 0; j < allURLs.Count; j++) // For every URL in collection
+                {
+                    string ID = allURLs[j].Id;
+                    if(ID != "02VOylXbGlVvkN6yXEEW")
+                    {
+                        Previous_Payload URL = allURLs[j].ConvertTo<Previous_Payload>();
+
+                        Payload payload3 = new Payload
+                        {
+                            amount = URL.amount,
+                            amountGreen = URL.amountGreen,
+                            amountBlue = URL.amountBlue,
+                            amountPurple = URL.amountPurple,
+                            amountOrange = URL.amountOrange,
+                            amountRed = URL.amountRed,
+                            avrgMultiplier = URL.avrgMultiplier,
+                            highestMultiplier = new List<float>() { URL.highestMultiplier },
+                            planet = URL.planet,
+                            URLSubstring = URL.URLSubstring
+                        };
+
+                        DocumentReference docRef = db.Collection(pl.Domains[i]).Document(ID);
+                        await docRef.SetAsync(payload3);
+                    }
+                }
+            }
+        }
 
         public static async void TransferData(FirestoreDb db)
         {
@@ -67,8 +113,7 @@ namespace LUX
                 URL.amountPurple += pl.amountPurple;
                 URL.amountOrange += pl.amountOrange;
                 URL.amountRed += pl.amountRed;
-                URL.highestMultiplier = pl.highestMultiplier > URL.highestMultiplier ? pl.highestMultiplier : URL.highestMultiplier;
-
+                URL.highestMultiplier = GetTop3Highest(pl.highestMultiplier, URL.highestMultiplier);
                 average += pl.avrgMultiplier * pl.amount;
                 average /= URL.amount;
 
@@ -82,8 +127,19 @@ namespace LUX
 
         }
 
+        private static List<float> GetTop3Highest(List<float> list1, List<float> list2)
+        {
+            // Combine the two lists into one
+            var combinedList = list1.Concat(list2);
+            // Order the combined list in descending order by value
+            var top3 = combinedList.OrderByDescending(f => f).Take(3);
+            // return the top 3 highest floats
+            return top3.ToList();
+        }
+
         public static async void ConvertData(FirestoreDb db)    // Converts from old data to new version
         {
+            /*
             string planet;
             string URLSub;
             float avrg;
@@ -178,6 +234,7 @@ namespace LUX
                 URLSubstring = URLSub
             };
             await docRef.SetAsync(payload3);
+            */
         }
 
 
@@ -211,7 +268,7 @@ namespace LUX
                         amountOrange = 0,
                         amountRed = 0,
                         avrgMultiplier = 0,
-                        highestMultiplier = 0,
+                        highestMultiplier = new List<float>(),
                         planet = planet,
                         URLSubstring = URLSub
                     };

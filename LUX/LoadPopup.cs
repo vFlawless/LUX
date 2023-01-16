@@ -33,7 +33,7 @@ namespace LUX
             richTextBox.ReadOnly = true;
             richTextBox.HideSelection = true;
             richTextBox.DetectUrls = true;
-
+            richTextBox.Font = new Font("Consolas", 10);
 
             richTextBox.LinkClicked += RichTextBox_LinkClicked;
             richTextBox.MouseMove += RichTextBox_MouseMove;
@@ -50,7 +50,7 @@ namespace LUX
             RichTextBox richTextBox = (RichTextBox)sender;
             Point clickPosition = richTextBox.PointToClient(Cursor.Position); // get the position of the mouse click in the RichTextBox's client area
             int charIndex = richTextBox.GetCharIndexFromPosition(clickPosition); // get the index of the character under the mouse cursor
-            if (charIndex < 125)
+            if (charIndex < 250)
             {
                 int startIndex = charIndex; // set the start index of the word to the index of the clicked character
 
@@ -271,7 +271,7 @@ namespace LUX
 
             //Get the first average Multiplier (Sorting)
             index = tempBox.Find("average multiplier"); // Color the average Multiplier
-            if (index < 125)
+            if (index < 250)
             {
                 if (tempBox.Text[index + "average multiplier".Length] == arrowUp)
                 {
@@ -360,42 +360,46 @@ namespace LUX
             
             if (currentSort == "average d")
             {
-                x += "".PadRight(10) + "average multiplier" + arrowDown + "".PadRight(30) + "highest multiplier".PadRight(50) + "amount" + "\n\n\n";
+                x += "".PadRight(8) + $"average multiplier{arrowDown}".PadRight(30) + "highest multiplier".PadRight(55) + "amount" + "\n\n\n";
                 planetsList.Sort((x, y) => y.avrgMultiplier.CompareTo(x.avrgMultiplier));
             }
             else if (currentSort == "average a")
             {
-                x += "".PadRight(10) + "average multiplier" + arrowUp + "".PadRight(30) + "highest multiplier".PadRight(50) + "amount" + "\n\n\n";
+                x += "".PadRight(8) + $"average multiplier{arrowUp}".PadRight(30) + "highest multiplier".PadRight(55) + "amount" + "\n\n\n";
                 planetsList.Sort((x, y) => x.avrgMultiplier.CompareTo(y.avrgMultiplier));
             }
             else if (currentSort == "highest d")
             {
-                x += "".PadRight(10) + "average multiplier" + "".PadRight(30) + ("highest multiplier" + arrowDown).PadRight(50)  + "amount" + "\n\n\n";
-                planetsList.Sort((x, y) => y.highestMultiplier.CompareTo(x.highestMultiplier));
+                x += "".PadRight(8) + "average multiplier".PadRight(30) + $"highest multiplier{arrowDown}".PadRight(55) + "amount" + "\n\n\n";
+                planetsList.Sort((x, y) => y.highestMultiplier[0].CompareTo(x.highestMultiplier[0]));
             }
             else if (currentSort == "highest a")
             {
-                x += "".PadRight(10) + "average multiplier" + "".PadRight(30) + ("highest multiplier" + arrowUp ).PadRight(50) + "amount" + "\n\n\n";
-                planetsList.Sort((x, y) => x.highestMultiplier.CompareTo(y.highestMultiplier));
+                x += "".PadRight(8) + "average multiplier".PadRight(30) + $"highest multiplier{arrowUp}".PadRight(55) + "amount" + "\n\n\n";
+                planetsList.Sort((x, y) => x.highestMultiplier[0].CompareTo(y.highestMultiplier[0]));
             }
             else if (currentSort == "amount d")
             {
-                x += "".PadRight(10) + "average multiplier" + "".PadRight(30) + "highest multiplier".PadRight(50) + "amount" + arrowDown + "\n\n\n";
+                x += "".PadRight(8) + "average multiplier".PadRight(30) + "highest multiplier".PadRight(55) + "amount" + arrowDown + "\n\n\n";
                 planetsList.Sort((x, y) => y.amount.CompareTo(x.amount));
             }
             else if (currentSort == "amount a")
             {
-                x += "".PadRight(10) + "average multiplier" + "".PadRight(30) + "highest multiplier".PadRight(50) + "amount" + arrowUp + "\n\n\n";
+                x += "".PadRight(8) + "average multiplier".PadRight(30) + "highest multiplier".PadRight(55) + "amount" + arrowUp + "\n\n\n";
                 planetsList.Sort((x, y) => x.amount.CompareTo(y.amount));
             }
 
             for (int i = 0; i < planetsList.Count; i++)
             {
-                x += (i + 1).ToString().PadRight(8) + planetsList[i].URLSubstring + "\n" + "".PadRight(10) +
-                    $"average multiplier: {planetsList[i].avrgMultiplier:0.00000}".PadRight(30) +
-                    $"highest multiplier: {planetsList[i].highestMultiplier:0.00000}".PadRight(50) +
-                    $"{planetsList[i].amount:n0} fishes caught" +
-                    "\n\n";
+                x += (i + 1).ToString().PadRight(8) + planetsList[i].URLSubstring + "\n" + "".PadRight(8) +
+                     $"average multiplier: {planetsList[i].avrgMultiplier:0.00000}".PadRight(30);
+                string y = $"highest multiplier: "; 
+                for(int j = 0; j < planetsList[i].highestMultiplier.Count; j++)
+                {
+                    y += $"{planetsList[i].highestMultiplier[j]:0.0000}   ";
+                }
+                x += y.PadRight(55);
+                x += $"{planetsList[i].amount:n0} fishes caught" + "\n\n";
             }
 
             richTextBox.Text = x;
@@ -407,7 +411,7 @@ namespace LUX
             RichTextBox richTextBox = (RichTextBox)sender;
             Point clickPosition = richTextBox.PointToClient(Cursor.Position); // get the position of the mouse click in the RichTextBox's client area
             int charIndex = richTextBox.GetCharIndexFromPosition(clickPosition); // get the index of the character under the mouse cursor
-            if (charIndex < 125)
+            if (charIndex < 200)
             {
                 int startIndex = charIndex; // set the start index of the word to the index of the clicked character
 

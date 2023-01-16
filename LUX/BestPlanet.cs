@@ -1,4 +1,6 @@
 ﻿using Google.Cloud.Firestore;
+using System.Collections.Generic;
+using System.Runtime.Intrinsics.X86;
 
 namespace LUX
 {
@@ -6,14 +8,14 @@ namespace LUX
     {
         public string PlanetName;
         public float AvrgMultiplier;
-        public float HighestMultiplier;
+        public List<float> HighestMultiplier;
         public int Amount;
 
-        public BestPlanet(string PlanetName = "", float AvrgMultiplier = 0.0f, float HighestMultiplier = 0.0f, int Amount = 0)
+        public BestPlanet(string PlanetName = "", float AvrgMultiplier = 0.0f, List<float> HighestMultiplier = null, int Amount = 0)
         {
             this.PlanetName = PlanetName;
             this.AvrgMultiplier = AvrgMultiplier;
-            this.HighestMultiplier = HighestMultiplier;
+            this.HighestMultiplier = HighestMultiplier ?? new List<float>();
             this.Amount = Amount;
         }
 
@@ -79,7 +81,7 @@ namespace LUX
                         amountOrange += Planet.amountOrange;
                         amountRed += Planet.amountRed;
                         avrgMultiplier += Planet.avrgMultiplier * Planet.amount;
-                        highestMulitplier = Planet.highestMultiplier > highestMulitplier ? Planet.highestMultiplier : highestMulitplier;
+                        highestMulitplier = Planet.highestMultiplier[0] > highestMulitplier ? Planet.highestMultiplier[0] : highestMulitplier;
 
                         for (int l = 0; l < planetHighest[planetTypes[j]].Length; l++)   // Loop threw array to see if there are some missing or if the current Planet is better then some in there
                         {
@@ -102,6 +104,16 @@ namespace LUX
             }
             avrgMultiplier /= amountGreen + amountBlue + amountPurple + amountOrange + amountRed;
             return (bestPlanets, amountPlanets, amountGreen, amountBlue, amountPurple, amountOrange, amountRed, avrgMultiplier, highestMulitplier);
+        }
+
+        private static List<float> GetTop3Highest(List<float> list1, List<float> list2)
+        {
+            // Combine the two lists into one
+            var combinedList = list1.Concat(list2);
+            // Order the combined list in descending order by value
+            var top3 = combinedList.OrderByDescending(f => f).Take(3);
+            // return the top 3 highest floats
+            return top3.ToList();
         }
 
         private (float[], BestPlanet[]) floatList(float[] scores, int position, float score, BestPlanet[] bestPlanets, BestPlanet planet)

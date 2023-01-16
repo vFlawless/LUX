@@ -1,7 +1,9 @@
 ﻿using Google.Cloud.Firestore;
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
-using System.Text;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
@@ -9,9 +11,11 @@ namespace LUX
 {
     public partial class Form1 : Form
     {
+        ToolTip toolTip = new ToolTip();
+
         protected FirestoreDb db;
         readonly string regex = @"^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w\.\-\?\&\=\+\%\$\@\#\~\;\,\:\!\*\'\(\)]*)*\/?$";
-        readonly string currentVersion = "1.4.5";
+        readonly string currentVersion = "1.5.4";
         int GreenMulti;
         int BlueMulti;
         int PurpleMulti;
@@ -21,15 +25,16 @@ namespace LUX
         bool previously_checked = false;
         bool invalidURL = false;
         List<Payload> planetsList = new();
-        //                                        Adding all the Fishes                                               \\
-        List<Fish> Fishes = new();
 
-        
+        //                                        Adding all the Fishes                                               \\
+        List<Fish> Fishes = new Fish().GetFishList();
+        float[] Top3Multi = new float[3];
+        string[] Top3Names = new string[3];
+        bool isLoad = false;
 
         public Form1()
         {
             InitializeComponent();
-
             WebClient webClient = new WebClient();
 
             try
@@ -68,27 +73,43 @@ namespace LUX
         private Rectangle button2OriginalRectangle;
         private Rectangle label1OriginalRectangle;
         private Rectangle label2OriginalRectangle;
+        private Rectangle label3OriginalRectangle;
+        private Rectangle label4OriginalRectangle;
         private Rectangle FishingTextBoxOriginalRectangle;
         private Rectangle StatsTextBoxOriginalRectangle;
         private Rectangle URLTextBoxOriginalrectangle;
         private Rectangle Checkbox1OriginalRectengle;
         private Rectangle Checkbox2OriginalRectengle;
-
+        private Rectangle whiteListWord;
+        private Rectangle whiteListNumber;
 
         private void Form1_Load(object sender, EventArgs e)
         {
+            isLoad = true;
+
             originalFormSize = new Rectangle(this.Location.X, this.Location.Y, this.Size.Width, this.Size.Height);
             button1OriginalRectangle = new Rectangle(button1.Location.X, button1.Location.Y, button1.Width, button1.Height);
             button2OriginalRectangle = new Rectangle(button2.Location.X, button2.Location.Y, button2.Width, button2.Height);
             label1OriginalRectangle = new Rectangle(label1.Location.X, label1.Location.Y, label1.Width, label1.Height);
             label2OriginalRectangle = new Rectangle(label2.Location.X, label2.Location.Y, label2.Width, label2.Height);
+            label3OriginalRectangle = new Rectangle(label3.Location.X, label3.Location.Y, label3.Width, label3.Height);
+            label4OriginalRectangle = new Rectangle(label4.Location.X, label4.Location.Y, label4.Width, label4.Height);
             FishingTextBoxOriginalRectangle = new Rectangle(FishingHistoryTextbox.Location.X, FishingHistoryTextbox.Location.Y, FishingHistoryTextbox.Width, FishingHistoryTextbox.Height);
             StatsTextBoxOriginalRectangle = new Rectangle(StatsTextBox.Location.X, StatsTextBox.Location.Y, StatsTextBox.Width, StatsTextBox.Height);
             URLTextBoxOriginalrectangle = new Rectangle(URLTextbox.Location.X, URLTextbox.Location.Y, URLTextbox.Width, URLTextbox.Height);
             Checkbox1OriginalRectengle = new Rectangle(UploadDataCheckbox.Location.X, UploadDataCheckbox.Location.Y, UploadDataCheckbox.Width, UploadDataCheckbox.Height);
             Checkbox2OriginalRectengle = new Rectangle(AllStatsCheckBox.Location.X, AllStatsCheckBox.Location.Y, AllStatsCheckBox.Width, AllStatsCheckBox.Height);
+            whiteListNumber = new Rectangle(whitelistmultiplier.Location.X, whitelistmultiplier.Location.Y, whitelistmultiplier.Width, whitelistmultiplier.Height);
+            whiteListWord = new Rectangle(whitelistFish.Location.X, whitelistFish.Location.Y, whitelistFish.Width, whitelistFish.Height);
+
 
             this.Text = "LUX Fishing Tool V" + currentVersion;
+
+            Fishes.Sort((x, y) => x.name.CompareTo(y.name));
+            for (int i = 0; i < Fishes.Count; i++)
+            {
+                whitelistFish.Items.Add(Fishes[i].name);
+            }
 
             byte[] resourceBytes = Properties.Resources.cloudfire;
 
@@ -105,7 +126,9 @@ namespace LUX
 
 
         private async void button1_Click(object sender, EventArgs e)
-        {   
+        {
+            Top3Names = new string[3];
+            Top3Multi = new float[3];
             // Resetting the Multipliers so they don't get stacked
             GreenMulti = 0;
             BlueMulti = 0;
@@ -116,10 +139,25 @@ namespace LUX
             //                                        Adding all the Fishes                                               \\
             Fishes = new Fish().GetFishList();
 
-            string temp = URLTextbox.Text.ToLower();
+            string temp = URLTextbox.Text;
 
             string Message = FishingHistoryTextbox.Text;
-            
+
+            // If you want to watch a fish
+            string selectedFish = whitelistFish.SelectedItem?.ToString() ?? "";
+            string selectedMultiTemp = whitelistmultiplier.Text.Replace(" ", "0");
+            while (selectedMultiTemp.Length < 5)
+            {
+                selectedMultiTemp += "0";
+            }
+
+            float selectedMultiplier = float.Parse(selectedMultiTemp);
+
+            if(selectedMultiplier >= 1000)
+            {
+                selectedMultiplier /= 1000;
+            }
+
             if (CheckTextboxesEmpty(temp, Message))
             {
                 return;
@@ -131,7 +169,7 @@ namespace LUX
             label2.ForeColor = System.Drawing.Color.Black;
 
             // Check if a youtube Video Link contains a channel reference (not reachable links)
-            if (temp.Contains("youtube.com/") && temp.Contains("&ab_channel=") && UploadDataCheckbox.Checked)
+            if (temp.ToLower().Contains("youtube.com/") && temp.ToLower().Contains("&ab_channel=") && UploadDataCheckbox.Checked)
             {
                 MessageBox.Show("Youtube links with channel references ('&ab_channel=') can not be reached in the future, so they will not be uploaded to the datatabse. You can only see your session stats." +
                     "Please do not delete this reference and upload the same stats since the URL changed and therfore a whole new wold is generated.");
@@ -142,13 +180,26 @@ namespace LUX
                 invalidURL = false;
             }
 
-            if (previousMessage == Message && UploadDataCheckbox.Checked && previously_checked)
+
+            if (previousMessage.Length != 0 && Message.Contains(previousMessage) && (previously_checked && UploadDataCheckbox.Checked))      // Check if Text was placed in there double 
             {
-                label1.Text = "Do not enter the same Text twice:";
+                string temp2 = Message;
+                Message = Message.Replace(previousMessage, "");
+                previousMessage = temp2;
+                Message = Message.Replace("\n", "");
+            }
+            else
+            {
+                previousMessage = Message;
+            }
+
+            if(Message == "")
+            {
+                label1.Text = "Enter a different text then before:";
                 label1.ForeColor = System.Drawing.Color.Red;
                 return;
             }
-            previousMessage = Message;
+
             previously_checked = UploadDataCheckbox.Checked;
 
 
@@ -162,25 +213,37 @@ namespace LUX
             string[] lines = Message.Split(
                 new string[] { "\n\n" },
                 StringSplitOptions.None
-            ).Where(s => !s.StartsWith("[")).ToArray();
+            ).ToArray();
 
 
             // Get what Planet the current is aswell as reading the formatted input --> returning the Multipliers
-            var result = GetPlanet(Fishes, lines);
+            var result = GetPlanet(Fishes, lines, selectedFish, selectedMultiplier);
             string planet = result.Item1;
             Fishes = result.Item2;
             List<float> Multipliers = result.Item3;    // List that contains every multiplier 
+            List<float> selectedFishMultipliers = result.Item4;
 
+            if (Multipliers.Any(x => x > 2)) // Check if a multiplier > 2 is contained --> if multipliers were manipulated
+            {
+                if (UploadDataCheckbox.Checked)
+                {
+                    MessageBox.Show("Please do not manipulate multipliers! These stats will not be uploaded to the database!");
+                    return;
+                }
+                MessageBox.Show("Please do not manipulate multipliers!");
+            }
+            
             int amount = Multipliers.Count;
 
             // avrg multiplier 
             float averageMulitplier = (float)(Multipliers.Count > 0 ? Multipliers.Average() : 0.0);
-            // highest multiplier
-            float highestMultiplier = (float)(Multipliers.Count > 0 ? Multipliers.Max() : 0.0);
-
-            StatsTextBox.Text = await OutputStringAsync(planet, averageMulitplier, highestMultiplier, GreenMulti, BlueMulti, PurpleMulti, OrangeMulti, RedMulti, amount, rest, Domain);
+            // 3 highest multiplier
+            List<float> top3Highest = Multipliers.OrderByDescending(f => f).Take(3).ToList();
+            
+            StatsTextBox.Text = await OutputStringAsync(planet, averageMulitplier, top3Highest, GreenMulti, BlueMulti, PurpleMulti, OrangeMulti, RedMulti, amount, rest, Domain, selectedFish, selectedFishMultipliers);
+            //Color Output
+            ColorWords2();
         }
-
 
         private async void button2_Click(object sender, EventArgs e)
         {
@@ -257,7 +320,6 @@ namespace LUX
             }
         }
 
-
         private void StatsTextBox_MouseMove(object sender, MouseEventArgs e)
         {
             Point clickPosition = StatsTextBox.PointToClient(Cursor.Position); // get the position of the mouse click in the RichTextBox's client area
@@ -278,30 +340,64 @@ namespace LUX
             if (length > 0) // if the length of the word is greater than 0, show a message box
             {
                 string word = StatsTextBox.Text.Substring(startIndex, length); // get the word that was clicked
+
                 if (word == "Yellow" || word == "Orange" || word == "Grey" || word == "Blue" || word == "Red" || word == "Purple" || word == "Ocean" || word == "all")
                 {
                     this.Cursor = Cursors.Hand;
+                }
+
+                if ((Top3Multi[0] != 0 && word == Top3Multi[0].ToString()) || (Top3Multi[1] != 0 && word == Top3Multi[1].ToString()) || (Top3Multi[2] != 0 && word == Top3Multi[2].ToString()))
+                {
+                    this.Cursor = Cursors.Hand;
+                }
+
+                if (Top3Multi[0] != 0 && word == Top3Multi[0].ToString())
+                {
+                    toolTip.SetToolTip(StatsTextBox, Top3Names[0]);
+                    toolTip.Active = true;
+                }
+                else if (Top3Multi[1] != 0 && word == Top3Multi[1].ToString())
+                {
+                    toolTip.SetToolTip(StatsTextBox, Top3Names[1]);
+                    toolTip.Active = true;
+                }
+                else if (Top3Multi[2] != 0 && word == Top3Multi[2].ToString())
+                {
+                    toolTip.SetToolTip(StatsTextBox, Top3Names[2]);
+                    toolTip.Active = true;
+                }
+                else
+                {
+                    toolTip.Active = false;
                 }
             }
         }
         private void Form1_Resize(object sender, EventArgs e)
         {
-            resizeControl(button1OriginalRectangle, button1);
-            resizeControl(button2OriginalRectangle, button2);
-            resizeControl(label1OriginalRectangle, label1);
-            resizeControl(label2OriginalRectangle, label2);
-            resizeControl(FishingTextBoxOriginalRectangle, FishingHistoryTextbox);
-            resizeControl(StatsTextBoxOriginalRectangle, StatsTextBox);
-            resizeControl(URLTextBoxOriginalrectangle, URLTextbox);
-            resizeControl(Checkbox1OriginalRectengle, UploadDataCheckbox);
-            resizeControl(Checkbox2OriginalRectengle, AllStatsCheckBox);
+            if (isLoad)
+            {
+                resizeControl(button1OriginalRectangle, button1);
+                resizeControl(button2OriginalRectangle, button2);
+                resizeControl(label1OriginalRectangle, label1);
+                resizeControl(label2OriginalRectangle, label2);
+                resizeControl(label3OriginalRectangle, label3);
+                resizeControl(label4OriginalRectangle, label4);
+                resizeControl(FishingTextBoxOriginalRectangle, FishingHistoryTextbox);
+                resizeControl(StatsTextBoxOriginalRectangle, StatsTextBox);
+                resizeControl(URLTextBoxOriginalrectangle, URLTextbox);
+                resizeControl(Checkbox1OriginalRectengle, UploadDataCheckbox);
+                resizeControl(Checkbox2OriginalRectengle, AllStatsCheckBox);
+                resizeControl(whiteListNumber, whitelistmultiplier);
+                resizeControl(whiteListWord, whitelistFish);
+            }
         }
 
         private void resizeControl(Rectangle r, Control c)
         {
             float xRatio = (float)(this.Width) / (float)(originalFormSize.Width);
-            float yRatio = (float)(this.Height) / (float)(originalFormSize.Height);
 
+            float yRatio = (float)(this.Height) / (float)(originalFormSize.Height);
+            
             int newX = (int)(r.Location.X * xRatio);
             int newY = (int)(r.Location.Y * yRatio);
 
@@ -468,7 +564,7 @@ namespace LUX
                 StatsTextBox.SelectionFont = new Font(StatsTextBox.SelectionFont, FontStyle.Underline | FontStyle.Bold);
             }
 
-            index = StatsTextBox.Find("average multiplier: 1"); // Color the average Multipliers 
+            index = StatsTextBox.Find("average multiplier: "); // Color the average Multipliers 
             while (index >= 0)
             {
                 index += "average multiplier: ".Length;
@@ -507,7 +603,93 @@ namespace LUX
                 StatsTextBox.SelectionFont = new Font(StatsTextBox.SelectionFont, StatsTextBox.SelectionFont.Style | FontStyle.Bold);
 
                 // Find the next occurrence of the word
-                index = StatsTextBox.Find("average multiplier: 1", index, StatsTextBox.TextLength, RichTextBoxFinds.None);
+                index = StatsTextBox.Find("average multiplier: ", index, StatsTextBox.TextLength, RichTextBoxFinds.None);
+            }
+
+            index = StatsTextBox.Find("BEST:");
+            while (index >= 0)
+            {
+                // Select the word and make it bold
+                StatsTextBox.SelectionStart = index;
+                StatsTextBox.SelectionLength = "BEST:".Length;
+                StatsTextBox.SelectionColor = Color.FromArgb(255, 215, 0);
+                StatsTextBox.SelectionFont = new Font(StatsTextBox.SelectionFont, StatsTextBox.SelectionFont.Style | FontStyle.Bold);
+
+                // Find the next occurrence of the word
+                index = StatsTextBox.Find("BEST:", index + "BEST:".Length, StatsTextBox.TextLength, RichTextBoxFinds.None);
+            }
+
+            index = StatsTextBox.Find("SECOND BEST:");
+            while (index >= 0)
+            {
+                // Select the word and make it bold
+                StatsTextBox.SelectionStart = index;
+                StatsTextBox.SelectionLength = "SECOND BEST:".Length;
+                StatsTextBox.SelectionColor = Color.FromArgb(192, 192, 192);
+                StatsTextBox.SelectionFont = new Font(StatsTextBox.SelectionFont, StatsTextBox.SelectionFont.Style | FontStyle.Bold);
+
+                // Find the next occurrence of the word
+                index = StatsTextBox.Find("SECOND BEST:", index + "SECOND BEST:".Length, StatsTextBox.TextLength, RichTextBoxFinds.None);
+            }
+
+            index = StatsTextBox.Find("THIRD BEST:");
+            while (index >= 0)
+            {
+                // Select the word and make it bold
+                StatsTextBox.SelectionStart = index;
+                StatsTextBox.SelectionLength = "THIRD BEST:".Length;
+                StatsTextBox.SelectionColor = Color.FromArgb(205, 127, 50);
+                StatsTextBox.SelectionFont = new Font(StatsTextBox.SelectionFont, StatsTextBox.SelectionFont.Style | FontStyle.Bold);
+
+                // Find the next occurrence of the word
+                index = StatsTextBox.Find("THIRD BEST:", index + "THIRD BEST:".Length, StatsTextBox.TextLength, RichTextBoxFinds.None);
+            }
+        }
+
+        private void ColorWords2()
+        {
+
+            int length;
+            int index = StatsTextBox.Find("average multiplier"); // Color the average Multipliers 
+            while (index >= 0)
+            {
+                index += "average multiplier is: ".Length;
+                length = 7;
+                string x = "";
+
+                for (int i = 0; i < length; i++)
+                {
+                    x += StatsTextBox.Text[index + i];
+                }
+
+                float number = float.Parse(x);
+                if (number >= 100000) number /= 100000;
+
+                // Select the word and make it bold
+                StatsTextBox.SelectionStart = index;
+                StatsTextBox.SelectionLength = length;
+                if (number < 1.003)
+                {
+                    StatsTextBox.SelectionColor = Color.Red;
+                }
+                else if (number < 1.007)
+                {
+                    StatsTextBox.SelectionColor = Color.Orange;
+                }
+
+                else if (number < 1.010)
+                {
+                    StatsTextBox.SelectionColor = Color.YellowGreen;
+                }
+                else
+                {
+                    StatsTextBox.SelectionColor = Color.Green;
+                }
+
+                StatsTextBox.SelectionFont = new Font(StatsTextBox.SelectionFont, StatsTextBox.SelectionFont.Style | FontStyle.Bold);
+
+                // Find the next occurrence of the word
+                index = StatsTextBox.Find("average multiplier", index, StatsTextBox.TextLength, RichTextBoxFinds.None);
             }
 
             index = StatsTextBox.Find("BEST:");
@@ -610,14 +792,14 @@ namespace LUX
                 }
             }
 
-            return (Url, rest);
+            return (Url.ToLower(), rest);
         }
 
 
 
-        private async Task<string> OutputStringAsync(string planet, float averageMulitplier, float highestMultiplier,
+        private async Task<string> OutputStringAsync(string planet, float averageMulitplier, List<float> highestMultiplier,
                                     int GreenMulti, int BlueMulti, int PurpleMulti, int OrangeMulti, int RedMulti,
-                                    int amount, string rest, string Domain
+                                    int amount, string rest, string Domain, string selectedFish, List<float> selectedFishMultipliers
                                     )
         {
             string x = "";
@@ -640,7 +822,25 @@ namespace LUX
             x += $"Session stats ({planet}): \n";
             x = AppendX(x, pl.avrgMultiplier, pl.highestMultiplier, pl, pl.amount);
             x += $"{$"Out of {pl.amount:n0} {(pl.amount >= 0 ? "fishes" : "fish")}",-30} {pl.amountGreen * 100 + pl.amountBlue * 200 + pl.amountPurple * 1000 + pl.amountOrange * 20000 + pl.amountRed * 1000000:n0} Credits\n";
-
+            
+            if(selectedFish != "")
+            {
+                
+                if(selectedFishMultipliers.Count != 0)
+                {
+                    x += $"\n{selectedFish}: ";
+                    for (int i = 0; i < selectedFishMultipliers.Count; i++)
+                    {
+                        x += $"{selectedFishMultipliers[i]}{(i != selectedFishMultipliers.Count - 1 ? "," : "")} ";
+                    }
+                }
+                else
+                {
+                    x += $"\nNo {selectedFish} caught";
+                }
+                x += $"\n";
+            }
+            
             if (UploadDataCheckbox.Checked && !invalidURL)
             {
                 pl = await DataAsync(pl, Domain, amount);
@@ -648,19 +848,34 @@ namespace LUX
                 x += "------------------------------------------------------------------\n";
                 x += $"Alltime stats for https://{Domain}{(rest.Length > 0 ? $"/{rest}" : rest)}: \n\n";
                 x = AppendX(x, pl.avrgMultiplier, pl.highestMultiplier, pl, pl.amount);
-                x = AppendX(x, pl.avrgMultiplier, pl.highestMultiplier, pl, pl.amount);
                 x += $"Out of {pl.amount:n0} {(pl.amount >= 0 ? "fishes" : "fish")}\n";
             }
 
             return x;
         }
 
-        private static string AppendX(string x, double averageMulitplier, double highestMultiplier, Payload pl, int amount)
+        private static string AppendX(string x, float averageMulitplier, List<float> highestMultiplier, Payload pl, int amount)
         {
             x += $"Your average multiplier is: {averageMulitplier:0.00000}\n";
-            x += $"Your highest multiplier is: {highestMultiplier:0.00000}\n";
+            x += $"Your highest multipliers are: ";
+            
+            // Add the Top 3 highest multipliers
+            for(int i = 0; i < highestMultiplier.Count; i++)
+            {
+                if(highestMultiplier[i] != 0)
+                {
+                    if(highestMultiplier[i] == 1)
+                    {
+                        x += highestMultiplier[i].ToString() + "   ";
+                    }
+                    else
+                    {
+                        x += highestMultiplier[i].ToString("F5").TrimEnd('0') + "   ";
+                    }
+                }
+            }
 
-            x += "\n";
+            x += "\n\n";
 
             x += $"You've gotten an average of:\n";
 
@@ -702,7 +917,7 @@ namespace LUX
                         StatsTextBox.Text += $"THIRD BEST:".PadRight(20);
                     }
 
-                    if (planets[j].HighestMultiplier == 0)
+                    if (planets[j].AvrgMultiplier == 0)
                     {
                         StatsTextBox.Text += $"Currently there is no more {planettype} planet.\n\n";
                     }
@@ -712,9 +927,13 @@ namespace LUX
                         $"{planets[j].PlanetName}" +
                         $"\n\n" +
                         $"{planets[j].Amount:n0} {(planets[j].Amount == 1 ? "fish" : "fishes")} caught" +
-                        $"\naverage multiplier: {planets[j].AvrgMultiplier:0.00000}" +
-                        $"\nhighest multiplier: {planets[j].HighestMultiplier:0.00000} \n\n\n";
-                        ;
+                        $"\naverage multiplier: {planets[j].AvrgMultiplier:0.00000}";
+                        StatsTextBox.Text += $"\nhighest multiplier: ";
+                        for(int k = 0; k < planets[j].HighestMultiplier.Count; k++)
+                        {
+                            StatsTextBox.Text += $"{planets[j].HighestMultiplier[k]:0.0000}   ";
+                        }
+                        StatsTextBox.Text += "\n\n\n";
                     }
                 }
                 StatsTextBox.Text += $"------------------------------------------------------------------\n\n\n";
@@ -750,8 +969,6 @@ namespace LUX
 
 
 
-
-
         async Task<Payload> DataAsync(Payload payload, string url, int amount)
         {
             Query capitalQuery = db.Collection(url).WhereEqualTo("URLSubstring", payload.URLSubstring);
@@ -774,8 +991,7 @@ namespace LUX
                 payload.amountPurple += pl.amountPurple;
                 payload.amountOrange += pl.amountOrange;
                 payload.amountRed += pl.amountRed;
-                payload.highestMultiplier = pl.highestMultiplier > payload.highestMultiplier ? pl.highestMultiplier : payload.highestMultiplier;
-
+                payload.highestMultiplier = GetTop3Highest(pl.highestMultiplier, payload.highestMultiplier);
                 float average = payload.avrgMultiplier * amount;     //Calculate the average Multiplier
                 average += pl.avrgMultiplier * pl.amount;
                 average /= payload.amount;
@@ -795,15 +1011,24 @@ namespace LUX
             return payload;
         }
 
+        private static List<float> GetTop3Highest(List<float> list1, List<float> list2)
+        {
+            // Combine the two lists into one
+            var combinedList = list1.Concat(list2);
+            // Order the combined list in descending order by value
+            var top3 = combinedList.OrderByDescending(f => f).Take(3);
+            // return the top 3 highest floats
+            return top3.ToList();
+        }
 
-
-        private (string, List<Fish>, List<float>) GetPlanet(List<Fish> Fishes, string[] lines)
+        private (string, List<Fish>, List<float>, List<float>) GetPlanet(List<Fish> Fishes, string[] lines, string selectedFish, float selectedMulti)
         {
             int j;
             string name;
             string number;
             Planet planettemp = Planet.Null;
             List<float> Multipliers = new();
+            List<float> selectedFishMultipliers = new();
 
             for (int i = 0; i < lines.Length; i++)
             {
@@ -847,6 +1072,17 @@ namespace LUX
                 {
                     if (name == Fishes[k].name)
                     {
+                        float multi = (float.Parse(number) / Fishes[k].minWeigth);  
+                        multi = CalcMulti(multi);
+                        var res = Top3Entries(Top3Multi, Top3Names, multi, name);
+                        Top3Multi = res.Item1;
+                        Top3Names = res.Item2;
+
+                        if (name == selectedFish && multi >= selectedMulti)
+                        {
+                            selectedFishMultipliers.Add(multi);
+                        }
+
                         switch (Fishes[k].rarity)
                         {
                             case Rarity.Green:
@@ -865,16 +1101,9 @@ namespace LUX
                                 RedMulti++;
                                 break;
                         }
-
-                        if (float.Parse(number) / Fishes[k].minWeigth < 1000) // There was a problem when people are coming from europe / america because of the decimal '.' / ',' 
-                        {
-                            Multipliers.Add(float.Parse(number) / Fishes[k].minWeigth);
-                        }
-                        else
-                        {
-                            Multipliers.Add((float.Parse(number) / Fishes[k].minWeigth) / 1000);
-                        }
-
+                        
+                        Multipliers.Add(multi);
+                        
                         if (planettemp == Planet.Null)
                         {
                             planettemp = Fishes[k].planet;
@@ -923,20 +1152,81 @@ namespace LUX
                     break;
             }
 
-            return (planet, Fishes, Multipliers);
+            return (planet, Fishes, Multipliers, selectedFishMultipliers);
         }
 
+        private (float[], string[]) Top3Entries(float[] multi, string[] names, float newMulti, string newName)
+        {
+            string temp = newMulti.ToString("F5").TrimEnd('0');
+            newMulti = float.Parse(temp);
+            for (int i = 0; i < multi.Length; i++)
+            {
+                if (newMulti > multi[i] || multi[i] == 0)
+                {
+                    multi = InsertFloat(multi, newMulti, i);
+                    names = InsertString(names, newName, i);
+                    break;
+                }
+            }
+            return (multi, names);
+        
+        }
 
+        private float[] InsertFloat(float[] inputArray, float newFloat, int insertPosition)
+        {
+            float[] result = new float[3];
 
+            for (int i = 0; i < insertPosition; i++)
+            {
+                result[i] = inputArray[i];
+            }
 
+            result[insertPosition] = newFloat;
 
+            for (int i = insertPosition + 1; i < 3; i++)
+            {
+                result[i] = inputArray[i - 1];
+            }
+
+            return result;
+        }
+
+        string[] InsertString(string[] inputArray, string newString, int insertPosition)
+        {
+            string[] result = new string[3];
+
+            for (int i = 0; i < insertPosition; i++)
+            {
+                result[i] = inputArray[i];
+            }
+
+            result[insertPosition] = newString;
+
+            for (int i = insertPosition + 1; i < 3; i++)
+            {
+                result[i] = inputArray[i - 1];
+            }
+
+            return result;
+        }
+
+        private float CalcMulti(float multi)
+        {
+            if (multi > 2)
+            {
+                while (multi >= 1)
+                {
+                    multi /= 10;
+                }
+                multi *= 10;
+            }
+            return multi;
+        }
         async void Add_Document(string URL, Payload payload)
         {
             CollectionReference collection = db.Collection(URL);
-
             DocumentReference doc = db.Collection("URLS").Document("Domain"); // Collection with the names of the other collections (bases for leaderboards)
             DocumentSnapshot snapshot = await doc.GetSnapshotAsync();
-
             Payload2 pl = snapshot.ConvertTo<Payload2>();
             for (int i = 0; i < pl.Domains.Count; i++)
             {
@@ -952,16 +1242,12 @@ namespace LUX
             }
             await collection.AddAsync(payload);
         }
-
-
         private async Task<List<Payload>> GetAllData(string planet)
         {
             List<Payload> pl = new List<Payload>();
             DocumentReference doc = db.Collection("URLS").Document("Domain"); // Collection with the names of the other collections (bases for leaderboards)
             DocumentSnapshot snapshot = await doc.GetSnapshotAsync();
-
             Payload2 pl2 = snapshot.ConvertTo<Payload2>();
-
             if(planet == "all")
             {
                 for (int i = 0; i < pl2.Domains.Count; i++)     // For every collection (domain of URL)
@@ -984,7 +1270,7 @@ namespace LUX
                             avrgMultiplier = Planet.avrgMultiplier,
                             highestMultiplier = Planet.highestMultiplier,
                             planet = Planet.planet,
-                            URLSubstring = "https://" + pl2.Domains[i] + "/" + Planet.URLSubstring
+                            URLSubstring = "https://" + pl2.Domains[i] + (Planet.URLSubstring.Length == 0 ? "" : "/" + Planet.URLSubstring)
                         });
                     }
                     pl.Sort((x, y) => y.avrgMultiplier.CompareTo(x.avrgMultiplier));
@@ -1012,7 +1298,7 @@ namespace LUX
                         avrgMultiplier = Planet.avrgMultiplier,
                         highestMultiplier = Planet.highestMultiplier,
                         planet = Planet.planet,
-                        URLSubstring = "https://" + pl2.Domains[i] + "/" + Planet.URLSubstring
+                        URLSubstring = "https://" + pl2.Domains[i] + (Planet.URLSubstring.Length == 0 ? "" : "/" + Planet.URLSubstring)
                     });
                 }
                 pl.Sort((x, y) => y.avrgMultiplier.CompareTo(x.avrgMultiplier));
