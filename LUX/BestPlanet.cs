@@ -1,6 +1,4 @@
 ﻿using Google.Cloud.Firestore;
-using System.Collections.Generic;
-using System.Runtime.Intrinsics.X86;
 
 namespace LUX
 {
@@ -93,7 +91,7 @@ namespace LUX
                                 HighestMultiplier: Planet.highestMultiplier,
                                 Amount: Planet.amount
                                 );
-                                var res = floatList(planetHighest[planetTypes[j]], l, Planet.avrgMultiplier, bestPlanets[planetTypes[j]], bestP);
+                                var res = UpdateScoreAndPlanets(planetHighest[planetTypes[j]], l, Planet.avrgMultiplier, bestPlanets[planetTypes[j]], bestP);
                                 planetHighest[planetTypes[j]] = res.Item1;
                                 bestPlanets[planetTypes[j]] = res.Item2;
                                 break;
@@ -106,49 +104,17 @@ namespace LUX
             return (bestPlanets, amountPlanets, amountGreen, amountBlue, amountPurple, amountOrange, amountRed, avrgMultiplier, highestMulitplier);
         }
 
-        private static List<float> GetTop3Highest(List<float> list1, List<float> list2)
+
+        private (float[], BestPlanet[]) UpdateScoreAndPlanets(float[] scores, int position, float score, BestPlanet[] bestPlanets, BestPlanet planet)
         {
-            // Combine the two lists into one
-            var combinedList = list1.Concat(list2);
-            // Order the combined list in descending order by value
-            var top3 = combinedList.OrderByDescending(f => f).Take(3);
-            // return the top 3 highest floats
-            return top3.ToList();
-        }
-
-        private (float[], BestPlanet[]) floatList(float[] scores, int position, float score, BestPlanet[] bestPlanets, BestPlanet planet)
-        {
-            if (position == 0)
+            for (int i = scores.Length - 1; i > position; i--)
             {
-                // Push Highscores one back 
-                float temp = scores[0];
-                scores[0] = score;
-                float temp2 = scores[1];
-                scores[1] = temp;
-                scores[2] = temp2;
+                scores[i] = scores[i - 1];
+                bestPlanets[i] = bestPlanets[i - 1];
+            }
 
-                // Push Planets one back
-                var temp3 = bestPlanets[0];
-                bestPlanets[0] = planet;
-                var temp4 = bestPlanets[1];
-                bestPlanets[1] = temp3;
-                bestPlanets[2] = temp4;
-            }
-            else if (position == 1)
-            {
-                float temp = scores[1];
-                scores[1] = score;
-                scores[2] = temp;
-
-                var temp2 = bestPlanets[1];
-                bestPlanets[1] = planet;
-                bestPlanets[2] = temp2;
-            }
-            else if (position == 2)
-            {
-                scores[2] = score;
-                bestPlanets[2] = planet;
-            }
+            scores[position] = score;
+            bestPlanets[position] = planet;
 
             return (scores, bestPlanets);
         }

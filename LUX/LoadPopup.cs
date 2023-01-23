@@ -40,7 +40,7 @@ namespace LUX
             richTextBox.MouseClick += RichTextBox_MouseClick;
 
             //form.Controls.Add(richTextBox);
-            print(richTextBox, currentSort);
+            Print(richTextBox, currentSort);
 
             form.ShowDialog();
         }
@@ -50,174 +50,93 @@ namespace LUX
             RichTextBox richTextBox = (RichTextBox)sender;
             Point clickPosition = richTextBox.PointToClient(Cursor.Position); // get the position of the mouse click in the RichTextBox's client area
             int charIndex = richTextBox.GetCharIndexFromPosition(clickPosition); // get the index of the character under the mouse cursor
-            if (charIndex < 250)
+            if (charIndex < 200)
             {
-                int startIndex = charIndex; // set the start index of the word to the index of the clicked character
+                string word = GetClickedWord(richTextBox, charIndex);
+                string currentSort = ""; 
+                string arrowDown = "\u2193";
+                string arrowUp = "\u2191";
 
-                while (startIndex > 0 && !char.IsWhiteSpace(richTextBox.Text[startIndex - 1]))
+                if (word == "amount" || word == "amount" + arrowUp)
                 {
-                    // if the character to the left of the clicked character is not a white space, move the start index to the left
-                    startIndex--;
+                    currentSort = "amount d";
+                }
+                else if (word == "amount" + arrowDown)
+                {
+                    currentSort = "amount a";
                 }
 
-                int length = charIndex - startIndex; // set the length of the word to the difference between the start index and the end index
-
-                while (charIndex < richTextBox.Text.Length && !char.IsWhiteSpace(richTextBox.Text[charIndex]))
+                if (word == "average" || word == "highest" || word == "multiplier" || word == "multiplier" + arrowUp || word == "multiplier" + arrowDown)
                 {
-                    // if the character to the right of the clicked character is not a white space, move the end index to the right
-                    charIndex++;
-                    length++;
-                }
-
-                if (length > 0) // if the length of the word is greater than 0, show a message box
-                {
-                    string word = richTextBox.Text.Substring(startIndex, length); // get the word that was clicked
-                    string currentSort = "average multiplier"; // highest multiplier // amount
-                    string arrowDown = "\u2193";
-                    string arrowUp = "\u2191";
-
-                    if (word == "amount" || word == "amount" + arrowUp)
+                    int index = charIndex;
+                    string prevWord = "";
+                    if (word == "multiplier" || word == "multiplier" + arrowUp || word == "multiplier" + arrowDown)
                     {
-                        currentSort = "amount d";
-                        print(richTextBox, currentSort);
+                        do
+                        {
+                            index--;
+                        }
+                        while (index > 0 && !char.IsWhiteSpace(richTextBox.Text[index - 1]));
+                        index--;
+                        prevWord = GetClickedWord(richTextBox, index);
                     }
-                    else if (word == "amount" + arrowDown)
+                    else
                     {
-                        currentSort = "amount a";
-                        print(richTextBox, currentSort);
+                        prevWord = word;
                     }
 
-                    if(word == "average")
+                    if (prevWord == "average" || prevWord == "highest")
                     {
-                        charIndex = startIndex + length + 1;
-                        startIndex = charIndex; // set the start index of the word to the index of the clicked character
 
-                        while (startIndex > 0 && !char.IsWhiteSpace(richTextBox.Text[startIndex - 1]))
+                        if(word != "multiplier" && word != "multiplier" + arrowUp && word != "multiplier" + arrowDown)
                         {
-                            // if the character to the left of the clicked character is not a white space, move the start index to the left
-                            startIndex--;
+                            do
+                            {
+                                index++;
+                            }
+                            while (index > 0 && !char.IsWhiteSpace(richTextBox.Text[index - 1]));
+                            index++;
+                            word = GetClickedWord(richTextBox, index);
                         }
 
-                        length = charIndex - startIndex; // set the length of the word to the difference between the start index and the end index
-
-                        while (charIndex < richTextBox.Text.Length && !char.IsWhiteSpace(richTextBox.Text[charIndex]))
-                        {
-                            // if the character to the right of the clicked character is not a white space, move the end index to the right
-                            charIndex++;
-                            length++;
-                        }
-                        word = richTextBox.Text.Substring(startIndex, length);
 
                         if (word == "multiplier" || word == "multiplier" + arrowUp)
                         {
-                            currentSort = "average d";
-                            print(richTextBox, currentSort);
+                            currentSort = (prevWord == "average") ? "average d" : "highest d";
                         }
                         else if (word == "multiplier" + arrowDown)
                         {
-                            currentSort = "average a";
-                            print(richTextBox, currentSort);
+                            currentSort = (prevWord == "average") ? "average a" : "highest a";
                         }
                     }
+                }
 
-                    if (word == "highest")
-                    {
-                        charIndex = startIndex + length + 1;
-                        startIndex = charIndex; // set the start index of the word to the index of the clicked character
-
-                        while (startIndex > 0 && !char.IsWhiteSpace(richTextBox.Text[startIndex - 1]))
-                        {
-                            // if the character to the left of the clicked character is not a white space, move the start index to the left
-                            startIndex--;
-                        }
-
-                        length = charIndex - startIndex; // set the length of the word to the difference between the start index and the end index
-
-                        while (charIndex < richTextBox.Text.Length && !char.IsWhiteSpace(richTextBox.Text[charIndex]))
-                        {
-                            // if the character to the right of the clicked character is not a white space, move the end index to the right
-                            charIndex++;
-                            length++;
-                        }
-                        word = richTextBox.Text.Substring(startIndex, length);
-
-                        if (word == "multiplier" || word == "multiplier" + arrowUp)
-                        {
-                            currentSort = "highest d";
-                            print(richTextBox, currentSort);
-                        }
-                        else if (word == "multiplier" + arrowDown)
-                        {
-                            currentSort = "highest a";
-                            print(richTextBox, currentSort);
-                        }
-                    }
-
-                    if (word == "multiplier" || word == "multiplier" + arrowUp)
-                    {
-                        charIndex = startIndex - 2;
-                        startIndex = charIndex; // set the start index of the word to the index of the clicked character
-
-                        while (startIndex > 0 && !char.IsWhiteSpace(richTextBox.Text[startIndex - 1]))
-                        {
-                            // if the character to the left of the clicked character is not a white space, move the start index to the left
-                            startIndex--;
-                        }
-
-                        length = charIndex - startIndex; // set the length of the word to the difference between the start index and the end index
-
-                        while (charIndex < richTextBox.Text.Length && !char.IsWhiteSpace(richTextBox.Text[charIndex]))
-                        {
-                            // if the character to the right of the clicked character is not a white space, move the end index to the right
-                            charIndex++;
-                            length++;
-                        }
-                        word = richTextBox.Text.Substring(startIndex, length);
-                        if (word == "highest")
-                        {
-                            currentSort = "highest d";
-                            print(richTextBox, currentSort);
-                        }
-                        else if (word == "average")
-                        {
-                            currentSort = "average d";
-                            print(richTextBox, currentSort);
-                        }
-                    }
-                    else if (word == "multiplier" + arrowDown)
-                    {
-                        charIndex = startIndex - 2;
-                        startIndex = charIndex; // set the start index of the word to the index of the clicked character
-
-                        while (startIndex > 0 && !char.IsWhiteSpace(richTextBox.Text[startIndex - 1]))
-                        {
-                            // if the character to the left of the clicked character is not a white space, move the start index to the left
-                            startIndex--;
-                        }
-
-                        length = charIndex - startIndex; // set the length of the word to the difference between the start index and the end index
-
-                        while (charIndex < richTextBox.Text.Length && !char.IsWhiteSpace(richTextBox.Text[charIndex]))
-                        {
-                            // if the character to the right of the clicked character is not a white space, move the end index to the right
-                            charIndex++;
-                            length++;
-                        }
-                        word = richTextBox.Text.Substring(startIndex, length);
-                        if (word == "highest")
-                        {
-                            currentSort = "highest a";
-                            print(richTextBox, currentSort);
-                        }
-                        else if (word == "average")
-                        {
-                            currentSort = "average a";
-                            print(richTextBox, currentSort);
-                        }
-                    }
+                if (!string.IsNullOrEmpty(currentSort))
+                {
+                    Print(richTextBox, currentSort);
                 }
             }
         }
+
+        private string GetClickedWord(RichTextBox richTextBox, int charIndex)
+        {
+            int startIndex = charIndex;
+            while (startIndex > 0 && !char.IsWhiteSpace(richTextBox.Text[startIndex - 1]))
+            {
+                startIndex--;
+            }
+
+            int length = charIndex - startIndex;
+            while (charIndex < richTextBox.Text.Length && !char.IsWhiteSpace(richTextBox.Text[charIndex]))
+            {
+                charIndex++;
+                length++;
+            }
+
+            return richTextBox.Text.Substring(startIndex, length);
+        }
+
+
 
         private void Coloring(RichTextBox richTextBox)
         {
@@ -352,49 +271,47 @@ namespace LUX
             form.Controls.Add(tempBox);
         }
 
-        private void print(RichTextBox richTextBox, string currentSort)
+        private void Print(RichTextBox richTextBox, string currentSort)
         {
             string x = "";
             string arrowDown = "\u2193";
             string arrowUp = "\u2191";
-            
-            if (currentSort == "average d")
+            string averageMultiplier = "average multiplier";
+            string highestMultiplier = "highest multiplier";
+            string amount = "amount";
+
+            // Sort the planetsList based on the currentSort variable
+            SortPlanets(currentSort);
+
+            // Add the header to the string
+            switch (currentSort)
             {
-                x += "".PadRight(8) + $"average multiplier{arrowDown}".PadRight(30) + "highest multiplier".PadRight(55) + "amount" + "\n\n\n";
-                planetsList.Sort((x, y) => y.avrgMultiplier.CompareTo(x.avrgMultiplier));
-            }
-            else if (currentSort == "average a")
-            {
-                x += "".PadRight(8) + $"average multiplier{arrowUp}".PadRight(30) + "highest multiplier".PadRight(55) + "amount" + "\n\n\n";
-                planetsList.Sort((x, y) => x.avrgMultiplier.CompareTo(y.avrgMultiplier));
-            }
-            else if (currentSort == "highest d")
-            {
-                x += "".PadRight(8) + "average multiplier".PadRight(30) + $"highest multiplier{arrowDown}".PadRight(55) + "amount" + "\n\n\n";
-                planetsList.Sort((x, y) => y.highestMultiplier[0].CompareTo(x.highestMultiplier[0]));
-            }
-            else if (currentSort == "highest a")
-            {
-                x += "".PadRight(8) + "average multiplier".PadRight(30) + $"highest multiplier{arrowUp}".PadRight(55) + "amount" + "\n\n\n";
-                planetsList.Sort((x, y) => x.highestMultiplier[0].CompareTo(y.highestMultiplier[0]));
-            }
-            else if (currentSort == "amount d")
-            {
-                x += "".PadRight(8) + "average multiplier".PadRight(30) + "highest multiplier".PadRight(55) + "amount" + arrowDown + "\n\n\n";
-                planetsList.Sort((x, y) => y.amount.CompareTo(x.amount));
-            }
-            else if (currentSort == "amount a")
-            {
-                x += "".PadRight(8) + "average multiplier".PadRight(30) + "highest multiplier".PadRight(55) + "amount" + arrowUp + "\n\n\n";
-                planetsList.Sort((x, y) => x.amount.CompareTo(y.amount));
+                case "average d":
+                    x += "".PadRight(8) + $"{averageMultiplier}{arrowDown}".PadRight(30) + $"{highestMultiplier}".PadRight(55) + $"{amount}" + "\n\n\n";
+                    break;
+                case "average a":
+                    x += "".PadRight(8) + $"{averageMultiplier}{arrowUp}".PadRight(30) + $"{highestMultiplier}".PadRight(55) + $"{amount}" + "\n\n\n";
+                    break;
+                case "highest d":
+                    x += "".PadRight(8) + $"{averageMultiplier}".PadRight(30) + $"{highestMultiplier}{arrowDown}".PadRight(55) + $"{amount}" + "\n\n\n";
+                    break;
+                case "highest a":
+                    x += "".PadRight(8) + $"{averageMultiplier}".PadRight(30) + $"{highestMultiplier}{arrowUp}".PadRight(55) + $"{amount}" + "\n\n\n";
+                    break;
+                case "amount d":
+                    x += "".PadRight(8) + $"{averageMultiplier}".PadRight(30) + $"{highestMultiplier}".PadRight(55) + $"{amount}{arrowDown}" + "\n\n\n";
+                    break;
+                case "amount a":
+                    x += "".PadRight(8) + $"{averageMultiplier}".PadRight(30) + $"{highestMultiplier}".PadRight(55) + $"{amount}{arrowUp}" + "\n\n\n";
+                    break;
             }
 
             for (int i = 0; i < planetsList.Count; i++)
             {
                 x += (i + 1).ToString().PadRight(8) + planetsList[i].URLSubstring + "\n" + "".PadRight(8) +
                      $"average multiplier: {planetsList[i].avrgMultiplier:0.00000}".PadRight(30);
-                string y = $"highest multiplier: "; 
-                for(int j = 0; j < planetsList[i].highestMultiplier.Count; j++)
+                string y = $"highest multiplier: ";
+                for (int j = 0; j < planetsList[i].highestMultiplier.Count; j++)
                 {
                     y += $"{planetsList[i].highestMultiplier[j]:0.0000}   ";
                 }
@@ -406,12 +323,38 @@ namespace LUX
             Coloring(richTextBox);
         }
 
+        private void SortPlanets(string currentSort)
+        {
+            switch (currentSort)
+            {
+                case "average d":
+                    planetsList.Sort((x, y) => y.avrgMultiplier.CompareTo(x.avrgMultiplier));
+                    break;
+                case "average a":
+                    planetsList.Sort((x, y) => x.avrgMultiplier.CompareTo(y.avrgMultiplier));
+                    break;
+                case "highest d":
+                    planetsList.Sort((x, y) => y.highestMultiplier[0].CompareTo(x.highestMultiplier[0]));
+                    break;
+                case "highest a":
+                    planetsList.Sort((x, y) => x.highestMultiplier[0].CompareTo(y.highestMultiplier[0]));
+                    break;
+                case "amount d":
+                    planetsList.Sort((x, y) => y.amount.CompareTo(x.amount));
+                    break;
+                case "amount a":
+                    planetsList.Sort((x, y) => x.amount.CompareTo(y.amount));
+                    break;
+            }
+        }
+
+
         private void RichTextBox_MouseMove(object sender, MouseEventArgs e)
         {
             RichTextBox richTextBox = (RichTextBox)sender;
             Point clickPosition = richTextBox.PointToClient(Cursor.Position); // get the position of the mouse click in the RichTextBox's client area
             int charIndex = richTextBox.GetCharIndexFromPosition(clickPosition); // get the index of the character under the mouse cursor
-            if (charIndex < 200)
+            if (charIndex < 150)
             {
                 int startIndex = charIndex; // set the start index of the word to the index of the clicked character
 
