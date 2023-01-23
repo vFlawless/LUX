@@ -9,7 +9,7 @@ namespace LUX
         public List<float> HighestMultiplier;
         public int Amount;
 
-        public BestPlanet(string PlanetName = "", float AvrgMultiplier = 0.0f, List<float> HighestMultiplier = null, int Amount = 0)
+        public BestPlanet(string PlanetName = "", float AvrgMultiplier = 0.0f, List<float>? HighestMultiplier = null, int Amount = 0)
         {
             this.PlanetName = PlanetName;
             this.AvrgMultiplier = AvrgMultiplier;
@@ -37,12 +37,12 @@ namespace LUX
 
 
             int[] amountPlanets = new int[7];
-            string[] planetTypes = new string[] { "Yellow", "Orange", "Grey", "Blue", "Red", "Purple", "Ocean" };
+            string[] planetTypes = new string[] { "Yellow", "Orange", "Gray", "Blue", "Red", "Purple", "Ocean" };
             Dictionary<string, float[]> planetHighest = new Dictionary<string, float[]>
             {
                 { "Yellow", new float[3]},
                 { "Orange", new float[3]},
-                { "Grey", new float[3]},
+                { "Gray", new float[3]},
                 { "Blue", new float[3]},
                 { "Red", new float[3]},
                 { "Purple", new float[3]},
@@ -54,7 +54,7 @@ namespace LUX
             {
                 { "Yellow", initBestP() },
                 { "Orange", initBestP() },
-                { "Grey", initBestP() },
+                { "Gray", initBestP() },
                 { "Blue", initBestP() },
                 { "Red", initBestP() },
                 { "Purple", initBestP() },

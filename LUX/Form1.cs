@@ -17,7 +17,7 @@ namespace LUX
         
         protected FirestoreDb db;
         readonly string regex = @"^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w\.\-\?\&\=\+\%\$\@\#\~\;\,\:\!\*\'\(\)]*)*\/?$";
-        readonly string currentVersion = "1.5.5";
+        readonly string currentVersion = "1.6.1";
         int GreenMulti;
         int BlueMulti;
         int PurpleMulti;
@@ -59,18 +59,18 @@ namespace LUX
             {
 
             }
-            
         }
+
 
         //DB: 
         //"URL Domain"        Domain of www.youtube.com == youtube.com
-            //Random ID
-                //Multipliers 
-                //HighestValue
-                //.
-                //.
-            //~Random ID
-            //~Random ID
+        //Random ID
+        //Multipliers 
+        //HighestValue
+        //.
+        //.
+        //~Random ID
+        //~Random ID
 
         //After first / we split --> make sub directory
 
@@ -304,9 +304,9 @@ namespace LUX
                 {
                     planetsList = await GetAllData("Orange");
                 }
-                else if (word == "Grey")
+                else if (word == "Gray")
                 {
-                    planetsList = await GetAllData("Grey");
+                    planetsList = await GetAllData("Gray");
                 }
                 else if (word == "Blue")
                 {
@@ -359,7 +359,7 @@ namespace LUX
             {
                 string word = StatsTextBox.Text.Substring(startIndex, length); // get the word that was clicked
 
-                if (word == "Yellow" || word == "Orange" || word == "Grey" || word == "Blue" || word == "Red" || word == "Purple" || word == "Ocean" || word == "all")
+                if (word == "Yellow" || word == "Orange" || word == "Gray" || word == "Blue" || word == "Red" || word == "Purple" || word == "Ocean" || word == "all")
                 {
                     this.Cursor = Cursors.Hand;
                 }
@@ -474,14 +474,12 @@ namespace LUX
 
             List<Tuple<string, Color>> colorWords = new()
             {
-                Tuple.Create("Yellow planets:", Color.FromArgb(255, 255, 128)),
-                Tuple.Create("Orange planets:", Color.Orange),
-                Tuple.Create("Grey planets:", Color.Gray),
-                Tuple.Create("Blue planets:", Color.Blue),
-                Tuple.Create("Red planets:", Color.Red),
-                Tuple.Create("Purple planets:", Color.Purple),
-                Tuple.Create("Ocean planets:", Color.LightBlue)
-            };
+                StatsTextBox.SelectionStart = index2;
+                StatsTextBox.SelectionLength = length;
+                StatsTextBox.SelectionColor = Color.Orange;
+                StatsTextBox.Select(index, "Orange".Length);
+                StatsTextBox.SelectionFont = new Font(StatsTextBox.SelectionFont, FontStyle.Underline | FontStyle.Bold);
+            }
 
             int index2 = StatsTextBox.Find("Best of "); // Beginning of sentence
 
@@ -498,6 +496,18 @@ namespace LUX
                     StatsTextBox.SelectionFont = new Font(StatsTextBox.SelectionFont, FontStyle.Underline | FontStyle.Bold);
                 }
                 index2 = StatsTextBox.Find("Best of ", index, StatsTextBox.TextLength, RichTextBoxFinds.None);
+            }
+
+            index2 = StatsTextBox.Find("Best of ", index, StatsTextBox.TextLength, RichTextBoxFinds.None);
+            index = StatsTextBox.Find("Ocean planets:");
+            length = index + "Ocean planets:".Length - index2;
+            if (index >= 0)
+            {
+                StatsTextBox.SelectionStart = index2;
+                StatsTextBox.SelectionLength = length;
+                StatsTextBox.SelectionColor = Color.LightBlue;
+                StatsTextBox.Select(index, "Ocean".Length);
+                StatsTextBox.SelectionFont = new Font(StatsTextBox.SelectionFont, FontStyle.Underline | FontStyle.Bold);
             }
 
 
@@ -583,21 +593,18 @@ namespace LUX
             };
 
 
-            foreach (Tuple<string, Color> bestWord in bestWords)
+            index = StatsTextBox.Find("THIRD BEST:");
+            while (index >= 0)
             {
-                index = 0;
-                index = StatsTextBox.Find(bestWord.Item1, index, StatsTextBox.TextLength, RichTextBoxFinds.None);
-                while (index >= 0)
-                {
-                    // Select the word and make it bold
-                    StatsTextBox.SelectionStart = index;
-                    StatsTextBox.SelectionLength = bestWord.Item1.Length;
-                    StatsTextBox.SelectionColor = bestWord.Item2;
-                    StatsTextBox.SelectionFont = new Font(StatsTextBox.SelectionFont, FontStyle.Bold);
-                    index = StatsTextBox.Find(bestWord.Item1, index + bestWord.Item1.Length, StatsTextBox.TextLength, RichTextBoxFinds.None);
-                }
-            }
+                // Select the word and make it bold
+                StatsTextBox.SelectionStart = index;
+                StatsTextBox.SelectionLength = "THIRD BEST:".Length;
+                StatsTextBox.SelectionColor = Color.FromArgb(205, 127, 50);
+                StatsTextBox.SelectionFont = new Font(StatsTextBox.SelectionFont, StatsTextBox.SelectionFont.Style | FontStyle.Bold);
 
+                // Find the next occurrence of the word
+                index = StatsTextBox.Find("THIRD BEST:", index + "THIRD BEST:".Length, StatsTextBox.TextLength, RichTextBoxFinds.None);
+            }
         }
 
         private void ColorWords2()
@@ -861,7 +868,7 @@ namespace LUX
             {
                 var item = bestPlanets.ElementAt(i);
                 var planettype = item.Key;
-                StatsTextBox.Text += $"Best of {amountPlanets[i]:n0} {planettype} {(amountPlanets[i] == 1 ? "planet" : "planets")}:\n\n";
+                StatsTextBox.Text += $"Best of {amountPlanets[i]:n0} {planettype} {"planets"}:\n\n";
                 var planets = item.Value;
                 for (int j = 0; j < planets.Length; j++)
                 {
@@ -995,15 +1002,11 @@ namespace LUX
                 string nameMatch = nameRegex.Match(line).ToString();
                 string weightMatch = weightRegex.Match(line).ToString();
 
-                for (int k = 0; k < Fishes.Count; k++)
-                {
-                    if (nameMatch == Fishes[k].name)
-                    {
-                        float multi = (float.Parse(weightMatch) / Fishes[k].minWeigth);
-                        multi = CalcMulti(multi);
-                        
-                        float weigth = float.Parse(multi.ToString("F7").TrimEnd('0') == "1," ? "1" : multi.ToString("F7").TrimEnd('0'));
-                        InsertWeight(weigth, nameMatch);
+            for (int i = 0; i < lines.Length; i++)
+            {
+                j = 14;
+                name = "";
+                number = "";
 
                         if (selectedFish == "All Fish" || nameMatch == selectedFish)
                         {
@@ -1073,7 +1076,11 @@ namespace LUX
                         {
                             planettemp = Fishes[k].planet;
                         }
-                        else if (planettemp != Fishes[k].planet)
+                        else if(planettemp == Planet.Rift && Fishes[k].planet != Planet.Rift)
+                        {
+                            planettemp = Fishes[k].planet;
+                        }
+                        else if (planettemp != Fishes[k].planet && planettemp != Planet.Rift && Fishes[k].planet != Planet.Rift)
                         {
                             planettemp = Planet.Ocean;
                         }
@@ -1106,11 +1113,14 @@ namespace LUX
                 case Planet.Blue:
                     planet = "Blue";
                     break;
-                case Planet.Grey:
-                    planet = "Grey";
+                case Planet.Gray:
+                    planet = "Gray";
                     break;
                 case Planet.Purple:
                     planet = "Purple";
+                    break;
+                case Planet.Rift:
+                    planet = "Rift";
                     break;
                 case Planet.Null:
                     planet = "Null";
@@ -1302,8 +1312,9 @@ namespace LUX
         Yellow,
         Blue,
         Red,
-        Grey,
+        Gray,
         Purple,
+        Rift,
         Null
     }
 
